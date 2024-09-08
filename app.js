@@ -42,6 +42,15 @@ app.get('/admin', function (req, res) {
   }
 });
 
+app.get('/logout', function (req, res) {
+  req.session.destroy(function(err) {
+      if (err) {
+          return res.status(500).send('Error when attempting to log out.');
+      }
+      res.redirect('/');
+  });
+});
+
 app.get('/hacker/secret.txt', function (req, res) {
   fs.readFile('secret.txt', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/plain'});
