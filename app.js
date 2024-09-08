@@ -16,7 +16,15 @@ app.use(session({
 }));
 
 app.get('/', function (req, res) {
-  fs.readFile('main.html', function (err, data) {
+  fs.readFile('home.html', function (err, data) {
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(data);
+    return res.end();
+  });
+});
+
+app.get('/flag', function (req, res) {
+  fs.readFile('flag.html', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write(data);
     return res.end();
@@ -26,6 +34,10 @@ app.get('/', function (req, res) {
 app.get('/hacker', function (req, res) {
   data = {Danger:"Close", Hacker:"You are a hacker"};
   return res.send(data['Hacker']);
+});
+
+app.get('/hint', function (req, res) {
+  return res.send("Discovering hidden endpoints can potentially lead to other vulnerabilities. (Consider using tools such as ffuf or gobuster)");
 });
 
 app.get('/admin', function (req, res) {
@@ -51,7 +63,11 @@ app.get('/logout', function (req, res) {
   });
 });
 
-app.get('/hacker/secret.txt', function (req, res) {
+app.get('/common', function (req, res) {
+  res.send();
+});
+
+app.get('/common/config.php', function (req, res) {
   fs.readFile('secret.txt', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/plain'});
     res.write(data);
@@ -61,6 +77,14 @@ app.get('/hacker/secret.txt', function (req, res) {
 
 app.get('/images/background.jpeg', function (req, res) {
   fs.readFile('images/background.jpeg', function (err, data) {
+    res.writeHead(200, {'Content-Type': 'image/jpeg'})
+    res.write(data);
+    return res.end();
+  });
+});
+
+app.get('/images/flagbackground.jpeg', function (req, res) {
+  fs.readFile('images/flagbackground.jpeg', function (err, data) {
     res.writeHead(200, {'Content-Type': 'image/jpeg'})
     res.write(data);
     return res.end();
