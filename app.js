@@ -29,6 +29,14 @@ app.get('/hacker/secret.txt', function (req, res) {
   });
 });
 
+app.get('/images/background.jpeg', function (req, res) {
+  fs.readFile('images/background.jpeg', function (err, data) {
+    res.writeHead(200, {'Content-Type': 'image/jpeg'})
+    res.write(data);
+    return res.end();
+  });
+});
+
 app.get('/robots.txt', function (req, res) {
   fs.readFile('robots.txt', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/plain'});
