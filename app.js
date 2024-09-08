@@ -31,7 +31,11 @@ app.get('/hacker', function (req, res) {
 app.get('/admin', function (req, res) {
   if (req.session.isAdmin) {
     // User has admin access
-    res.send('<h1>Welcome to the Admin Page</h1>');
+    fs.readFile('admin.html', function (err, data) {
+      res.writeHead(200, {'Content-Type': 'text/html'});
+      res.write(data);
+      return res.end();
+    });
   } else {
       // User does not have admin access
       res.status(403).send('<h1>Access Denied</h1>');
