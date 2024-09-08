@@ -2,10 +2,18 @@ var express = require('express');
 var app = express();
 var fs = require('fs');
 var bodyParser = require('body-parser');
+var session = require('express-session');
 
 // Middleware
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Session middleware setup
+app.use(session({
+  secret: 'Password123!', // Replace with a strong secret
+  resave: false,
+  saveUninitialized: true
+}));
 
 app.get('/', function (req, res) {
   fs.readFile('main.html', function (err, data) {
@@ -21,8 +29,13 @@ app.get('/hacker', function (req, res) {
 });
 
 app.get('/admin', function (req, res) {
-  data = {Admin:"Welcome to the admin dashboard"}
-  return res.send(data['Admin']);
+  if (req.session.isAdmin) {
+    // User has admin access
+    res.send('<h1>Welcome to the Admin Page</h1>');
+  } else {
+      // User does not have admin access
+      res.status(403).send('<h1>Access Denied</h1>');
+  }
 });
 
 app.get('/hacker/secret.txt', function (req, res) {
@@ -45,6 +58,7 @@ app.post('/validate_flag', function (req, res) {
   const { flag } = req.body;
 
   if (flag == 'WiFi{y0U_kN0w_fuZZ1Ng!}') {
+      req.session.isAdmin = true;
       return res.redirect('/admin');
   } else {
       res.writeHead(403, {'Content-Type': 'application/json'})
