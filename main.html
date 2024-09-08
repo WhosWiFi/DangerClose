@@ -39,7 +39,10 @@
 <body>
     <div class="container">
         <h1>Flag Input</h1>
-        <input type="text" placeholder="Enter text here...">
+        <form action="/validate_flag" method="post">
+            <input type="text" name="flag" placeholder="Enter text here...">
+            <button type="submit">Submit</button>
+        </form>
     </div>
 </body>
 </html>
