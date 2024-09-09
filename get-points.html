@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Points Tracker</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        #points { font-size: 24px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div id="points">Points: 0</div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get points from local storage or initialize to 0
+            let points = parseInt(localStorage.getItem('points')) || 0;
+
+            // Update points display
+            const pointsDisplay = document.getElementById('points');
+            pointsDisplay.textContent = `Points: ${points}`;
+
+            // Increment points by 10
+            points += 10;
+
+            // Update local storage
+            localStorage.setItem('points', points);
+
+            // Update points display again with new value
+            pointsDisplay.textContent = `Points: ${points}`;
+        });
+    </script>
+</body>
+</html>

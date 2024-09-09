@@ -3,10 +3,12 @@ var app = express();
 var fs = require('fs');
 var bodyParser = require('body-parser');
 var session = require('express-session');
+var cookieParser = require('cookie-parser');
 
 // Middleware
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // Session middleware setup
 app.use(session({
@@ -40,7 +42,18 @@ app.get('/challenges', function (req, res) {
 });
 
 app.get('/socialmedia', function (req, res) {
+  // Set a custom cookie named "user-secret" with the value "secret"
+  res.cookie('session', 'WiFi{X5S_s3Ssi0n_l34k}'); //no httponly flag to prevent JavaScript from accessing the cookie.
+
   fs.readFile('socialmedia.html', function (err, data) {
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(data);
+    return res.end();
+  });
+});
+
+app.get('/get-points', function (req, res) {
+  fs.readFile('get-points.html', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write(data);
     return res.end();
@@ -114,7 +127,11 @@ app.post('/validate_flag', function (req, res) {
   if (flag == 'WiFi{y0U_kN0w_fuZZ1Ng!}') {
       req.session.isAdmin = true;
       return res.redirect('/admin');
-  } else {
+  } 
+  if (flag == 'WiFi{X5S_s3Ssi0n_l34k}') {
+    return res.redirect('/get-points');
+  } 
+  else {
       res.writeHead(403, {'Content-Type': 'application/json'})
       res.write("Flag is incorrect.")
       return res.end(); // Send 418 I'm a teapot if it doesn't match
