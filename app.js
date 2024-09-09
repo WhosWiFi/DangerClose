@@ -31,6 +31,23 @@ app.get('/flag', function (req, res) {
   });
 });
 
+app.get('/challenges', function (req, res) {
+  fs.readFile('challenges.html', function (err, data) {
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(data);
+    return res.end();
+  });
+});
+
+app.get('/socialmedia', function (req, res) {
+  fs.readFile('socialmedia.html', function (err, data) {
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(data);
+    return res.end();
+  });
+});
+
+
 app.get('/hacker', function (req, res) {
   data = {Danger:"Close", Hacker:"You are a hacker"};
   return res.send(data['Hacker']);
