@@ -4,6 +4,7 @@ var fs = require('fs');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 var cookieParser = require('cookie-parser');
+const mysql = require('mysql');
 
 // Middleware
 app.use(express.json());
@@ -16,6 +17,14 @@ app.use(session({
   resave: false,
   saveUninitialized: true
 }));
+
+const connection = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: 'NotSafePassword', // Replace with a strong password
+  database: 'users'
+});
+
 
 app.get('/', function (req, res) {
   fs.readFile('home.html', function (err, data) {
@@ -49,6 +58,17 @@ app.get('/socialmedia', function (req, res) {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write(data);
     return res.end();
+  });
+});
+
+app.get('/get_users', function (req, res) { 
+  connection.query('SELECT * FROM users', (err, rows) => {
+    if (err) {
+      res.status(500).send('Database query error');
+      console.error(err);  // Log the error
+      return;
+    }
+    res.json(rows);
   });
 });
 
@@ -130,7 +150,10 @@ app.post('/validate_flag', function (req, res) {
   } 
   if (flag == 'WiFi{X5S_s3Ssi0n_l34k}') {
     return res.redirect('/get-points');
-  } 
+  }
+  if (flag == 'WiFi{sQL_m4sT3r}') {
+    return res.redirect('/get-points');
+  }
   else {
       res.writeHead(403, {'Content-Type': 'application/json'})
       res.write("Flag is incorrect.")
