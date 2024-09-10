@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Home</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: #333;
+            color: #fff;
+            padding: 15px;
+            text-align: center;
+        }
+        .search-bar {
+            margin: 20px;
+            padding: 10px;
+            text-align: center;
+        }
+        .search-input {
+            padding: 10px;
+            width: 70%;
+        }
+        .search-button {
+            padding: 10px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        .home-button {
+            text-align: center;
+            right: 100px;
+            background-color: #ff9900;
+        }
+        .result {
+            background-color: #fff;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Welcome to SocialMedia</h1>
+    <button class="home-button" onclick="window.location.href='/'">Exit Lab</button>
+</div>
+
+<div class="search-bar">
+    <input type="text" id="searchQuery" class="search-input" placeholder="Search...">
+    <button class="search-button" onclick="showResults()">Search</button>
+</div>
+
+<div class="result" id="resultBox">
+    <h2>Search Results:</h2>
+    <p id="resultText"></p>
+</div>
+
+<script>
+    // Function to sanitize user input against a blacklist of characters
+    function sanitizeInput(input) {
+        // Define a blacklist of characters commonly used in XSS attacks
+        const blacklist = ['(', ')', ';'];
+        console.log(input);
+        // Check if input contains any blacklisted characters
+        for (let i = 0; i < blacklist.length; i++) {
+            if (input.includes(blacklist[i])) {
+                // Return message when blacklisted characters are found
+                return "Malicious input detected. Sending IP address to Interpol...";
+            }
+        }
+
+        // If no blacklisted characters are found, return the original input
+        return input;
+    }
+
+    function showResults() {
+        var query = document.getElementById('searchQuery').value;
+
+        fetch('/xssCheck', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ query: query }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Create a dummy element to test if XSS payload is executed
+            var testElement = document.createElement('div');
+            testElement.innerHTML = data.query;
+            document.body.appendChild(testElement);
+
+            console.log(testElement.innerHTML);
+
+            function isXSSDetected(element) {
+                var detected = false;
+
+                // Check for <script> tags
+                var scripts = element.getElementsByTagName('script');
+                if (scripts.length > 0) {
+                    detected = true;
+                }
+                
+                // Check for <img> tags with onerror attributes
+                var images = element.getElementsByTagName('img');
+                for (var i = 0; i < images.length; i++) {
+                    if (images[i].hasAttribute('onerror')) {
+                        detected = true;
+                        break;
+                    }
+                }
+                
+                // Check for <iframe> and <object> tags
+                var iframes = element.getElementsByTagName('iframe');
+                if (iframes.length > 0) {
+                    detected = true;
+                }
+                
+                var objects = element.getElementsByTagName('object');
+                if (objects.length > 0) {
+                    detected = true;
+                }
+                
+                // Check for other potentially dangerous attributes
+                var dangerousAttributes = element.querySelectorAll('[onerror], [onload], [onclick], [onmouseover], [onfocus], [onchange], [onsubmit], [onkeydown], [onkeyup], [onkeypress], [onblur], [onfocusin], [onfocusout]');
+                if (dangerousAttributes.length > 0) {
+                    detected = true;
+                }
+                
+                // Check for potentially dangerous inline styles
+                var dangerousStyles = element.querySelectorAll('[style]');
+                for (var j = 0; j < dangerousStyles.length; j++) {
+                    var style = dangerousStyles[j].getAttribute('style');
+                    if (style && style.includes('expression(')) {
+                        detected = true;
+                        break;
+                    }
+                }
+                
+                // Check for potentially dangerous HTML attributes
+                var potentiallyDangerousAttributes = element.querySelectorAll('[src], [href], [data], [background]');
+                for (var k = 0; k < potentiallyDangerousAttributes.length; k++) {
+                    var attrValue = potentiallyDangerousAttributes[k].getAttribute('src') || 
+                                    potentiallyDangerousAttributes[k].getAttribute('href') || 
+                                    potentiallyDangerousAttributes[k].getAttribute('data') || 
+                                    potentiallyDangerousAttributes[k].getAttribute('background');
+                    if (attrValue && attrValue.includes('javascript:')) {
+                        detected = true;
+                        break;
+                    }
+                }
+                
+                // Check for malformed or suspicious HTML
+                var htmlContent = element.innerHTML.toLowerCase();
+                if (htmlContent.includes('<svg') || htmlContent.includes('<math')) {
+                    detected = true;
+                }
+                
+                return detected;
+            }
+            // Check if XSS payload was executed
+            if (isXSSDetected(testElement) && testElement.innerHTML.includes('alert(document.cookie)')) {
+                // Request the flag from the server
+                fetch('/xss-starter-12456-sTwsC')
+                    .then(response => response.text())
+                    .then(xss_starter_flag => {
+                            document.getElementById('resultText').innerHTML = `XSS Vulnerability detected! Flag: ${xss_starter_flag}`;
+                    });
+            } else {
+                document.getElementById('resultText').innerHTML = "Response received. No XSS Detected.";
+            }
+
+            // Clean up
+            document.body.removeChild(testElement);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+</script>
+
+</body>
+</html>

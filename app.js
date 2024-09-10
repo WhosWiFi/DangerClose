@@ -52,7 +52,7 @@ var flagChecks = {"xss_starter_check": false, "xss_intermediate_check": false, "
 var flags = {"xss_starter_flag": "WiFi{X5S_s3Ssi0n_l34k}", "xss_intermediate_flag": "WiFi{X5S_Bl4CK_L13T}", "fuzzing_flag": false, "sqlite3_flag": false}
 
 app.get('/', function (req, res) {
-  fs.readFile('home.html', function (err, data) {
+  fs.readFile('html/home.html', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write(data);
     return res.end();
@@ -60,7 +60,7 @@ app.get('/', function (req, res) {
 });
 
 app.get('/flag', function (req, res) {
-  fs.readFile('flag.html', function (err, data) {
+  fs.readFile('html/flag.html', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write(data);
     return res.end();
@@ -68,7 +68,7 @@ app.get('/flag', function (req, res) {
 });
 
 app.get('/challenges', function (req, res) {
-  fs.readFile('challenges.html', function (err, data) {
+  fs.readFile('html/challenges.html', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write(data);
     return res.end();
@@ -92,7 +92,7 @@ app.get('/xss-starter-12456-sTwsC', (req, res) => {
 });
 
 app.get('/xss_lab_description', function (req, res) {
-  fs.readFile('xss_lab_description.html', function (err, data) {
+  fs.readFile('html/xss_lab_description.html', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write(data);
     return res.end();
@@ -102,7 +102,7 @@ app.get('/xss_lab_description', function (req, res) {
 app.get('/socialmedia_starter', function (req, res) {
   res.cookie('session', 'cookie_obtained'); //no httponly flag to prevent JavaScript from accessing the cookie.
 
-  fs.readFile('socialmedia_starter.html', function (err, data) {
+  fs.readFile('html/socialmedia_starter.html', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write(data);
     return res.end();
@@ -112,7 +112,7 @@ app.get('/socialmedia_starter', function (req, res) {
 app.get('/socialmedia_intermediate', function (req, res) {
   res.cookie('session', 'WiFi{X5S_Bl4CK_L13T}'); //no httponly flag to prevent JavaScript from accessing the cookie.
 
-  fs.readFile('socialmedia_intermediate.html', function (err, data) {
+  fs.readFile('html/socialmedia_intermediate.html', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write(data);
     return res.end();
@@ -122,7 +122,7 @@ app.get('/socialmedia_intermediate', function (req, res) {
 app.get('/socialmedia_advanced', function (req, res) {
   res.cookie('session', 'WiFi{X5S_s3Ssi0n_l34k}'); //no httponly flag to prevent JavaScript from accessing the cookie.
 
-  fs.readFile('socialmedia_advanced.html', function (err, data) {
+  fs.readFile('html/socialmedia_advanced.html', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write(data);
     return res.end();
@@ -130,7 +130,7 @@ app.get('/socialmedia_advanced', function (req, res) {
 });
 
 app.get('/book_lookup', function (req, res) {
-  fs.readFile('bookstore.html', function (err, data) {
+  fs.readFile('html/bookstore.html', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write(data);
     return res.end();
@@ -154,14 +154,10 @@ app.get('/hacker', function (req, res) {
   return res.send(data['Hacker']);
 });
 
-app.get('/hint', function (req, res) {
-  return res.send("Discovering hidden endpoints can potentially lead to other vulnerabilities. (Consider using tools such as ffuf or gobuster)");
-});
-
 app.get('/admin', function (req, res) {
   if (req.session.isAdmin) {
     // User has admin access
-    fs.readFile('admin.html', function (err, data) {
+    fs.readFile('html/admin.html', function (err, data) {
       res.writeHead(200, {'Content-Type': 'text/html'});
       res.write(data);
       return res.end();
@@ -186,7 +182,7 @@ app.get('/common', function (req, res) {
 });
 
 app.get('/common/config.php', function (req, res) {
-  fs.readFile('secret.txt', function (err, data) {
+  fs.readFile('misc/secret.txt', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/plain'});
     res.write(data);
     return res.end();
@@ -240,7 +236,7 @@ app.post('/validate_flag', function (req, res) {
 });
 
 app.get('/robots.txt', function (req, res) {
-  fs.readFile('robots.txt', function (err, data) {
+  fs.readFile('misc/robots.txt', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/plain'});
     res.write(data);
     return res.end();
