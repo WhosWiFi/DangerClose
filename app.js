@@ -19,22 +19,24 @@ app.use(session({
   saveUninitialized: true
 }));
 
+// Database setup
 database.exec(`
   CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT,
-    email TEXT
+    password TEXT
   )
 `);
 
 // Insert data into the users table.
-const insert = database.prepare('INSERT INTO users (username, email) VALUES (?, ?)');
-insert.run('admin', 'admin@dangerclose.com');
-insert.run('flag', 'WiFi{sQL_m4sT3r}');
-insert.run('wifi', 'wifi@dangerclose.com');
-insert.run('giorno', 'giorno@dangerclose.com');
+const insert = database.prepare('INSERT INTO users (username, password) VALUES (?, ?)');
+insert.run('admin', 'WiFi{sQL_m4sT3r}');
+insert.run('wifi', 'Password123!');
+insert.run('giorno', 'Welcome1!');
 
 
+const userPoints = {points: 0};
+var flagChecks = {"xss_flag": false, "fuzzing_flag": false, "sqlite3_flag": false};
 
 app.get('/', function (req, res) {
   fs.readFile('home.html', function (err, data) {
@@ -77,11 +79,8 @@ app.get('/get_users', function (req, res) {
 });
 
 app.get('/get-points', function (req, res) {
-  fs.readFile('get-points.html', function (err, data) {
-    res.writeHead(200, {'Content-Type': 'text/html'});
-    res.write(data);
-    return res.end();
-  });
+  res.json(userPoints);
+  return res.end();
 });
 
 
@@ -148,19 +147,24 @@ app.get('/images/flagbackground.jpeg', function (req, res) {
 app.post('/validate_flag', function (req, res) {
   const { flag } = req.body;
 
-  if (flag == 'WiFi{y0U_kN0w_fuZZ1Ng!}') {
-      req.session.isAdmin = true;
-      return res.redirect('/admin');
+  if (flag == 'WiFi{y0U_kN0w_fuZZ1Ng!}' && flagChecks.fuzzing_flag == false) {
+    flagChecks.fuzzing_flag = true;
+    userPoints.points += 10;
+    return res.redirect('/get-points');
   } 
-  if (flag == 'WiFi{X5S_s3Ssi0n_l34k}') {
+  if (flag == 'WiFi{X5S_s3Ssi0n_l34k}' && flagChecks.xss_flag == false) {
+    flagChecks.xss_flag = true;
+    userPoints.points += 10;
     return res.redirect('/get-points');
   }
   if (flag == 'WiFi{sQL_m4sT3r}') {
-    return res.redirect('/get-points');
+    flagChecks.sqlite3_flag = true;
+    req.session.isAdmin = true;
+    return res.redirect('/admin');
   }
   else {
       res.writeHead(403, {'Content-Type': 'application/json'})
-      res.write("Flag is incorrect.")
+      res.write("Flag is incorrect or has been used before.");
       return res.end(); // Send 418 I'm a teapot if it doesn't match
   }
 });
