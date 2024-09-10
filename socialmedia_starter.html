@@ -78,7 +78,12 @@
 
             // Check if XSS payload was executed
             if (testElement.innerHTML.includes('alert(document.cookie)')) {
-                document.getElementById('resultText').innerHTML = "XSS Vulnerability detected!";
+                // Request the flag from the server
+                fetch('/get_xss_starter_flag')
+                    .then(response => response.text())
+                    .then(xss_starter_flag => {
+                            document.getElementById('resultText').innerHTML = `XSS Vulnerability detected! Flag: ${xss_starter_flag}`;
+                    });
             } else {
                 document.getElementById('resultText').innerHTML = "Response received. Check for XSS.";
             }

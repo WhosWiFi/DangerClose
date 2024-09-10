@@ -48,7 +48,8 @@ insertBook.run('The Giver', 'A world living without color.');
 
 
 const userPoints = {points: 0};
-var flagChecks = {"xss_starter_flag": false, "xss_intermediate_flag": false, "fuzzing_flag": false, "sqlite3_flag": false};
+var flagChecks = {"xss_starter_check": false, "xss_intermediate_check": false, "fuzzing_check": false, "sqlite3_check": false};
+var flags = {"xss_starter_flag": "WiFi{X5S_s3Ssi0n_l34k}", "xss_intermediate_flag": "WiFi{X5S_Bl4CK_L13T}", "fuzzing_flag": false, "sqlite3_flag": false}
 
 app.get('/', function (req, res) {
   fs.readFile('home.html', function (err, data) {
@@ -87,9 +88,15 @@ app.post('/xssCheck', (req, res) => {
   }
 });
 
+// Handle flag retrieval
+app.get('/get_xss_starter_flag', (req, res) => {
+  // Provide the flag
+  res.send(flags.xss_starter_flag);
+});
+
 app.get('/socialmedia_starter', function (req, res) {
   // Set a custom cookie named "user-secret" with the value "secret"
-  res.cookie('session', 'WiFi{X5S_s3Ssi0n_l34k}'); //no httponly flag to prevent JavaScript from accessing the cookie.
+  res.cookie('session', 'cookie_obtained'); //no httponly flag to prevent JavaScript from accessing the cookie.
 
   fs.readFile('socialmedia_starter.html', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/html'});
@@ -203,23 +210,23 @@ app.get('/images/flagbackground.jpeg', function (req, res) {
 app.post('/validate_flag', function (req, res) {
   const { flag } = req.body;
 
-  if (flag == 'WiFi{y0U_kN0w_fuZZ1Ng!}' && flagChecks.fuzzing_flag == false) {
+  if (flag == 'WiFi{y0U_kN0w_fuZZ1Ng!}' && flagChecks.fuzzing_check == false) {
     flagChecks.fuzzing_flag = true;
     userPoints.points += 10;
     return res.redirect('/get-points');
   } 
-  if (flag == 'WiFi{X5S_s3Ssi0n_l34k}' && flagChecks.xss_starter_flag == false) {
+  if (flag == 'WiFi{X5S_s3Ssi0n_l34k}' && flagChecks.xss_starter_check == false) {
     flagChecks.xss_starter_flag = true;
     userPoints.points += 10;
     return res.redirect('/get-points');
   }
-  if (flag == 'WiFi{X5S_Bl4CK_L13T}' && flagChecks.xss_intermediate_flag == false) {
+  if (flag == 'WiFi{X5S_Bl4CK_L13T}' && flagChecks.xss_intermediate_check == false) {
     flagChecks.xss_intermediate_flag = true;
     userPoints.points += 30;
     return res.redirect('/get-points');
   }
   if (flag == 'WiFi{sQL_m4sT3r}') {
-    flagChecks.sqlite3_flag = true;
+    flagChecks.sqlite3_check = true;
     req.session.isAdmin = true;
     return res.redirect('/admin');
   }
