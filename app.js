@@ -25,14 +25,26 @@ database.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT,
     password TEXT
-  )
+  );
+
+  CREATE TABLE books (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    bookname TEXT,
+    description TEXT
+  );
 `);
 
 // Insert data into the users table.
-const insert = database.prepare('INSERT INTO users (username, password) VALUES (?, ?)');
-insert.run('admin', 'WiFi{sQL_m4sT3r}');
-insert.run('wifi', 'Password123!');
-insert.run('giorno', 'Welcome1!');
+const insertUser = database.prepare('INSERT INTO users (username, password) VALUES (?, ?)');
+insertUser.run('admin', 'WiFi{sQL_m4sT3r}');
+insertUser.run('wifi', 'Password123!');
+insertUser.run('giorno', 'Welcome1!');
+
+// Insert data into the books table.
+const insertBook = database.prepare('INSERT INTO books (bookname, description) VALUES (?, ?)');
+insertBook.run('Harry Potter', 'You are a wizard Harry!');
+insertBook.run('Dune', 'The start of science fiction.');
+insertBook.run('The Giver', 'A world living without color.');
 
 
 const userPoints = {points: 0};
@@ -73,8 +85,17 @@ app.get('/socialmedia', function (req, res) {
   });
 });
 
-app.get('/get_users', function (req, res) { 
-  const rows = database.prepare('SELECT * FROM users').all();
+app.get('/book_lookup', function (req, res) {
+  fs.readFile('bookstore.html', function (err, data) {
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(data);
+    return res.end();
+  });
+});
+
+app.post('/sql_query', function (req, res) { 
+  const { userInput } = req.body;
+  const rows = database.prepare('SELECT bookname FROM books WHERE bookname =' + userInput + ';').all();
   res.json(rows);
 });
 
