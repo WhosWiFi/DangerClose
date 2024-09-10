@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Home</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: #333;
+            color: #fff;
+            padding: 15px;
+            text-align: center;
+        }
+        .search-bar {
+            margin: 20px;
+            padding: 10px;
+            text-align: center;
+        }
+        .search-input {
+            padding: 10px;
+            width: 70%;
+        }
+        .search-button {
+            padding: 10px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        .result {
+            background-color: #fff;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Welcome to SocialMedia</h1>
+</div>
+
+<div class="search-bar">
+    <input type="text" id="searchQuery" class="search-input" placeholder="Search...">
+    <button class="search-button" onclick="showResults()">Search</button>
+</div>
+
+<div class="result" id="resultBox">
+    <h2>Search Results:</h2>
+    <p id="resultText"></p>
+</div>
+
+<script>
+    // Function to sanitize user input against a blacklist of characters
+    function sanitizeInput(input) {
+        // Define a blacklist of characters commonly used in XSS attacks
+        const blacklist = ['(', ')', ';'];
+        console.log(input);
+        // Check if input contains any blacklisted characters
+        for (let i = 0; i < blacklist.length; i++) {
+            if (input.includes(blacklist[i])) {
+                // Return message when blacklisted characters are found
+                return "Malicious input detected. Sending IP address to Interpol...";
+            }
+        }
+
+        // If no blacklisted characters are found, return the original input
+        return input;
+    }
+
+    function showResults() {
+        var query = document.getElementById('searchQuery').value;
+        // Sanitize the input using the blacklist
+        var sanitizedQuery = sanitizeInput(query);
+
+        // Log for debugging purposes
+        console.log("Sanitized Query: ", sanitizedQuery);
+        document.getElementById('resultText').innerHTML = "You searched for: " + sanitizedQuery;
+    }
+</script>
+
+</body>
+</html>

@@ -48,7 +48,7 @@ insertBook.run('The Giver', 'A world living without color.');
 
 
 const userPoints = {points: 0};
-var flagChecks = {"xss_flag": false, "fuzzing_flag": false, "sqlite3_flag": false};
+var flagChecks = {"xss_starter_flag": false, "xss_intermediate_flag": false, "fuzzing_flag": false, "sqlite3_flag": false};
 
 app.get('/', function (req, res) {
   fs.readFile('home.html', function (err, data) {
@@ -74,11 +74,33 @@ app.get('/challenges', function (req, res) {
   });
 });
 
-app.get('/socialmedia', function (req, res) {
+app.get('/socialmedia_starter', function (req, res) {
   // Set a custom cookie named "user-secret" with the value "secret"
   res.cookie('session', 'WiFi{X5S_s3Ssi0n_l34k}'); //no httponly flag to prevent JavaScript from accessing the cookie.
 
-  fs.readFile('socialmedia.html', function (err, data) {
+  fs.readFile('socialmedia_starter.html', function (err, data) {
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(data);
+    return res.end();
+  });
+});
+
+app.get('/socialmedia_intermediate', function (req, res) {
+  // Set a custom cookie named "user-secret" with the value "secret"
+  res.cookie('session', 'WiFi{X5S_Bl4CK_L13T}'); //no httponly flag to prevent JavaScript from accessing the cookie.
+
+  fs.readFile('socialmedia_intermediate.html', function (err, data) {
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(data);
+    return res.end();
+  });
+});
+
+app.get('/socialmedia_advanced', function (req, res) {
+  // Set a custom cookie named "user-secret" with the value "secret"
+  res.cookie('session', 'WiFi{X5S_s3Ssi0n_l34k}'); //no httponly flag to prevent JavaScript from accessing the cookie.
+
+  fs.readFile('socialmedia_advanced.html', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write(data);
     return res.end();
@@ -173,9 +195,14 @@ app.post('/validate_flag', function (req, res) {
     userPoints.points += 10;
     return res.redirect('/get-points');
   } 
-  if (flag == 'WiFi{X5S_s3Ssi0n_l34k}' && flagChecks.xss_flag == false) {
-    flagChecks.xss_flag = true;
+  if (flag == 'WiFi{X5S_s3Ssi0n_l34k}' && flagChecks.xss_starter_flag == false) {
+    flagChecks.xss_starter_flag = true;
     userPoints.points += 10;
+    return res.redirect('/get-points');
+  }
+  if (flag == 'WiFi{X5S_Bl4CK_L13T}' && flagChecks.xss_intermediate_flag == false) {
+    flagChecks.xss_intermediate_flag = true;
+    userPoints.points += 30;
     return res.redirect('/get-points');
   }
   if (flag == 'WiFi{sQL_m4sT3r}') {
