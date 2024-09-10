@@ -61,24 +61,34 @@
 <script>
     function showResults() {
         var query = document.getElementById('searchQuery').value;
-            fetch('/xssCheck', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ query: query }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('resultText').innerHTML = "You searched for: " + data.query;
-                } else {
-                    document.getElementById('resultText').innerHTML = "Error: " + data.message;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+
+        fetch('/xssCheck', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ query: query }),
+        })
+        .then(response => response.json()) // Change to .json() for JSON responses
+        .then(data => {
+            // Create a dummy element to test if XSS payload is executed
+            var testElement = document.createElement('div');
+            testElement.innerHTML = data.query;
+            document.body.appendChild(testElement);
+
+            // Check if XSS payload was executed
+            if (testElement.innerHTML.includes('alert(document.cookie)')) {
+                document.getElementById('resultText').innerHTML = "XSS Vulnerability detected!";
+            } else {
+                document.getElementById('resultText').innerHTML = "Response received. Check for XSS.";
+            }
+
+            // Clean up
+            document.body.removeChild(testElement);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
     }
 </script>
 
