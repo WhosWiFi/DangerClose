@@ -75,12 +75,10 @@ app.get('/challenges', function (req, res) {
   });
 });
 
-// Handle the POST request to /checkInput
 app.post('/xssCheck', (req, res) => {
   const { query } = req.body;
 
   if (query) {
-      // Process the query as needed
       res.json({ success: true, query: query });
   } else {
       res.json({ success: false, message: "Query cannot be empty." });
@@ -102,7 +100,6 @@ app.get('/xss_lab_description', function (req, res) {
 });
 
 app.get('/socialmedia_starter', function (req, res) {
-  // Set a custom cookie named "user-secret" with the value "secret"
   res.cookie('session', 'cookie_obtained'); //no httponly flag to prevent JavaScript from accessing the cookie.
 
   fs.readFile('socialmedia_starter.html', function (err, data) {
@@ -113,7 +110,6 @@ app.get('/socialmedia_starter', function (req, res) {
 });
 
 app.get('/socialmedia_intermediate', function (req, res) {
-  // Set a custom cookie named "user-secret" with the value "secret"
   res.cookie('session', 'WiFi{X5S_Bl4CK_L13T}'); //no httponly flag to prevent JavaScript from accessing the cookie.
 
   fs.readFile('socialmedia_intermediate.html', function (err, data) {
@@ -124,7 +120,6 @@ app.get('/socialmedia_intermediate', function (req, res) {
 });
 
 app.get('/socialmedia_advanced', function (req, res) {
-  // Set a custom cookie named "user-secret" with the value "secret"
   res.cookie('session', 'WiFi{X5S_s3Ssi0n_l34k}'); //no httponly flag to prevent JavaScript from accessing the cookie.
 
   fs.readFile('socialmedia_advanced.html', function (err, data) {
