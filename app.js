@@ -78,7 +78,6 @@ app.get('/challenges', function (req, res) {
 // Handle the POST request to /checkInput
 app.post('/xssCheck', (req, res) => {
   const { query } = req.body;
-  console.log('Received query:', query);
 
   if (query) {
       // Process the query as needed
@@ -89,7 +88,7 @@ app.post('/xssCheck', (req, res) => {
 });
 
 // Handle flag retrieval
-app.get('/get_xss_starter_flag', (req, res) => {
+app.get('/xss-starter-12456-sTwsC', (req, res) => {
   // Provide the flag
   res.send(flags.xss_starter_flag);
 });
