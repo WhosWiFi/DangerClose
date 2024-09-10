@@ -18,11 +18,15 @@ cd DangerClose
 ```
 https://nodejs.org/en/download/prebuilt-installer
 ```
-4. Start the application
+4. Use npm to install the required dependencies
+```
+npm install
+```
+5. Start the application
 ```
 node app.js
 ```
-5. The application can be accessed on a web browser at the following URL
+6. The application can be accessed on a web browser at the following URL
 ```
 http://localhost:3000
 ```
