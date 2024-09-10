@@ -15,14 +15,17 @@
             text-align: center;
             margin-top: 50px;
         }
-        .container {
-            display: flex;
+        h2 {
+            text-align: center;
+        }
+        .starter {
+            display: flex; /* change to none to make invisible */
             flex-wrap: wrap;
             justify-content: center;
             gap: 20px;
             margin: 50px;
         }
-        .vulnerability-button {
+        .starter-button {
             padding: 15px 30px;
             font-size: 18px;
             background-color: #007bff;
@@ -32,7 +35,47 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
-        .vulnerability-button:hover {
+        .starter-button:hover {
+            background-color: #0056b3;
+        }
+        .intermediate {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin: 50px;
+        }
+        .intermediate-button {
+            padding: 15px 30px;
+            font-size: 18px;
+            background-color: #ff9900;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .intermediate-button:hover {
+            background-color: #0056b3;
+        }
+        .advanced {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin: 50px;
+        }
+        .advanced-button {
+            padding: 15px 30px;
+            font-size: 18px;
+            background-color: #f986e0;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .advanced-button:hover {
             background-color: #0056b3;
         }
     </style>
@@ -40,21 +83,56 @@
 <body>
 
     <h1>Web Application Vulnerabilities</h1>
-    <div class="container">
-        <button class="vulnerability-button" onclick="window.location.href='/get_users'">SQL Injection</button>
-        <button class="vulnerability-button" onclick="window.location.href='/socialmedia'">Cross-Site Scripting (XSS)</button>
-        <button class="vulnerability-button" onclick="window.location.href='#'">API Testing</button>
-        <button class="vulnerability-button" onclick="window.location.href='#'">Broken Authentication</button>
-        <button class="vulnerability-button" onclick="window.location.href='#'">Sensitive Data Exposure</button>
-        <button class="vulnerability-button" onclick="window.location.href='#'">Security Misconfiguration</button>
-        <button class="vulnerability-button" onclick="window.location.href='#'">Insecure Deserialization</button>
-        <button class="vulnerability-button" onclick="window.location.href='#'">Broken Access Control</button>
-        <button class="vulnerability-button" onclick="window.location.href='#'">File Upload Vulnerabilities</button>
-        <button class="vulnerability-button" onclick="window.location.href='#'">Directory Traversal</button>
-        <button class="vulnerability-button" onclick="window.location.href='#'">Command Injection</button>
-        <button class="vulnerability-button" onclick="window.location.href='#'">Server Side Request Forgery (SSRF)</button>
-        <button class="vulnerability-button" onclick="window.location.href='#'">JWT (JSON Web Token)</button>
-        <button class="vulnerability-button" onclick="window.location.href='#'">Header Vulnerabilities</button>
+    <h2>Starting Out</h2>
+    <div class="starter">
+        <button class="starter-button" onclick="window.location.href='/get_users'">SQL Injection</button>
+        <button class="starter-button" onclick="window.location.href='/socialmedia'">Cross-Site Scripting (XSS)</button>
+        <button class="starter-button" onclick="window.location.href='#'">API Testing</button>
+        <button class="starter-button" onclick="window.location.href='#'">Broken Authentication</button>
+        <button class="starter-button" onclick="window.location.href='#'">Sensitive Data Exposure</button>
+        <button class="starter-button" onclick="window.location.href='#'">Security Misconfiguration</button>
+        <button class="starter-button" onclick="window.location.href='#'">Insecure Deserialization</button>
+        <button class="starter-button" onclick="window.location.href='#'">Broken Access Control</button>
+        <button class="starter-button" onclick="window.location.href='#'">File Upload Vulnerabilities</button>
+        <button class="starter-button" onclick="window.location.href='#'">Directory Traversal</button>
+        <button class="starter-button" onclick="window.location.href='#'">Command Injection</button>
+        <button class="starter-button" onclick="window.location.href='#'">Server Side Request Forgery (SSRF)</button>
+        <button class="starter-button" onclick="window.location.href='#'">JWT (JSON Web Token)</button>
+        <button class="starter-button" onclick="window.location.href='#'">Header Vulnerabilities</button>
+    </div>
+    <h2>Intermediate</h2>
+    <div class="intermediate">
+        <button class="intermediate-button" onclick="window.location.href='/get_users'">SQL Injection</button>
+        <button class="intermediate-button" onclick="window.location.href='/socialmedia'">Cross-Site Scripting (XSS)</button>
+        <button class="intermediate-button" onclick="window.location.href='#'">API Testing</button>
+        <button class="intermediate-button" onclick="window.location.href='#'">Broken Authentication</button>
+        <button class="intermediate-button" onclick="window.location.href='#'">Sensitive Data Exposure</button>
+        <button class="intermediate-button" onclick="window.location.href='#'">Security Misconfiguration</button>
+        <button class="intermediate-button" onclick="window.location.href='#'">Insecure Deserialization</button>
+        <button class="intermediate-button" onclick="window.location.href='#'">Broken Access Control</button>
+        <button class="intermediate-button" onclick="window.location.href='#'">File Upload Vulnerabilities</button>
+        <button class="intermediate-button" onclick="window.location.href='#'">Directory Traversal</button>
+        <button class="intermediate-button" onclick="window.location.href='#'">Command Injection</button>
+        <button class="intermediate-button" onclick="window.location.href='#'">Server Side Request Forgery (SSRF)</button>
+        <button class="intermediate-button" onclick="window.location.href='#'">JWT (JSON Web Token)</button>
+        <button class="intermediate-button" onclick="window.location.href='#'">Header Vulnerabilities</button>
+    </div>
+    <h2>Advanced</h2>
+    <div class="advanced">
+        <button class="advanced-button" onclick="window.location.href='/get_users'">SQL Injection</button>
+        <button class="advanced-button" onclick="window.location.href='/socialmedia'">Cross-Site Scripting (XSS)</button>
+        <button class="advanced-button" onclick="window.location.href='#'">API Testing</button>
+        <button class="advanced-button" onclick="window.location.href='#'">Broken Authentication</button>
+        <button class="advanced-button" onclick="window.location.href='#'">Sensitive Data Exposure</button>
+        <button class="advanced-button" onclick="window.location.href='#'">Security Misconfiguration</button>
+        <button class="advanced-button" onclick="window.location.href='#'">Insecure Deserialization</button>
+        <button class="advanced-button" onclick="window.location.href='#'">Broken Access Control</button>
+        <button class="advanced-button" onclick="window.location.href='#'">File Upload Vulnerabilities</button>
+        <button class="advanced-button" onclick="window.location.href='#'">Directory Traversal</button>
+        <button class="advanced-button" onclick="window.location.href='#'">Command Injection</button>
+        <button class="advanced-button" onclick="window.location.href='#'">Server Side Request Forgery (SSRF)</button>
+        <button class="advanced-button" onclick="window.location.href='#'">JWT (JSON Web Token)</button>
+        <button class="advanced-button" onclick="window.location.href='#'">Header Vulnerabilities</button>
     </div>
 
 </body>
