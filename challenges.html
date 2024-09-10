@@ -78,10 +78,29 @@
         .advanced-button:hover {
             background-color: #0056b3;
         }
+        .top-bar {
+            margin-top: 0;
+            display: flex;
+            text-align: center;
+            background-color: aqua;
+        }
+        .home-button {
+            text-align: center;
+            right: 100px;
+            background-color: #ff9900;
+        }
+        .view-points-button {
+            text-align: center;
+            margin-left: 0;
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
-
+    <div class="top-bar">
+        <button class="view-points-button" onclick="window.location.href='/get-points'">View Points</button>
+        <button class="home-button" onclick="window.location.href='/'">Home</button>
+    </div>
     <h1>Web Application Vulnerabilities</h1>
     <h2>Starting Out</h2>
     <div class="starter">
