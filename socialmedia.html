@@ -59,12 +59,31 @@
 </div>
 
 <script>
-    function showResults() {
-        // Get the user input
-        var query = document.getElementById('searchQuery').value;
+    // Function to sanitize user input against a blacklist of characters
+    function sanitizeInput(input) {
+        // Define a blacklist of characters commonly used in XSS attacks
+        const blacklist = ['(', ')', ';'];
+        console.log(input);
+        // Check if input contains any blacklisted characters
+        for (let i = 0; i < blacklist.length; i++) {
+            if (input.includes(blacklist[i])) {
+                // Return message when blacklisted characters are found
+                return "Malicious input detected. Sending IP address to Interpol...";
+            }
+        }
 
-        // Vulnerable to XSS: directly inserting the user input into the HTML without sanitization
-        document.getElementById('resultText').innerHTML = "You searched for: " + query;
+        // If no blacklisted characters are found, return the original input
+        return input;
+    }
+
+    function showResults() {
+        var query = document.getElementById('searchQuery').value;
+        // Sanitize the input using the blacklist
+        var sanitizedQuery = sanitizeInput(query);
+
+        // Log for debugging purposes
+        console.log("Sanitized Query: ", sanitizedQuery);
+        document.getElementById('resultText').innerHTML = "You searched for: " + sanitizedQuery;
     }
 </script>
 
