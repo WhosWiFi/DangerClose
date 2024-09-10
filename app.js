@@ -74,6 +74,19 @@ app.get('/challenges', function (req, res) {
   });
 });
 
+// Handle the POST request to /checkInput
+app.post('/xssCheck', (req, res) => {
+  const { query } = req.body;
+  console.log('Received query:', query);
+
+  if (query) {
+      // Process the query as needed
+      res.json({ success: true, query: query });
+  } else {
+      res.json({ success: false, message: "Query cannot be empty." });
+  }
+});
+
 app.get('/socialmedia_starter', function (req, res) {
   // Set a custom cookie named "user-secret" with the value "secret"
   res.cookie('session', 'WiFi{X5S_s3Ssi0n_l34k}'); //no httponly flag to prevent JavaScript from accessing the cookie.

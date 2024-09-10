@@ -61,7 +61,24 @@
 <script>
     function showResults() {
         var query = document.getElementById('searchQuery').value;
-        document.getElementById('resultText').innerHTML = "You searched for: " + sanitizedQuery;
+            fetch('/xssCheck', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query: query }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('resultText').innerHTML = "You searched for: " + data.query;
+                } else {
+                    document.getElementById('resultText').innerHTML = "Error: " + data.message;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
     }
 </script>
 
