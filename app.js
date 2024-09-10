@@ -4,7 +4,8 @@ var fs = require('fs');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 var cookieParser = require('cookie-parser');
-const mysql = require('mysql');
+const Database = require('better-sqlite3');
+const database = new Database(':memory:');
 
 // Middleware
 app.use(express.json());
@@ -18,12 +19,21 @@ app.use(session({
   saveUninitialized: true
 }));
 
-const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'NotSafePassword', // Replace with a strong password
-  database: 'users'
-});
+database.exec(`
+  CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT,
+    email TEXT
+  )
+`);
+
+// Insert data into the users table.
+const insert = database.prepare('INSERT INTO users (username, email) VALUES (?, ?)');
+insert.run('admin', 'admin@dangerclose.com');
+insert.run('flag', 'WiFi{sQL_m4sT3r}');
+insert.run('wifi', 'wifi@dangerclose.com');
+insert.run('giorno', 'giorno@dangerclose.com');
+
 
 
 app.get('/', function (req, res) {
@@ -62,14 +72,8 @@ app.get('/socialmedia', function (req, res) {
 });
 
 app.get('/get_users', function (req, res) { 
-  connection.query('SELECT * FROM users', (err, rows) => {
-    if (err) {
-      res.status(500).send('Database query error');
-      console.error(err);  // Log the error
-      return;
-    }
-    res.json(rows);
-  });
+  const rows = database.prepare('SELECT * FROM users').all();
+  res.json(rows);
 });
 
 app.get('/get-points', function (req, res) {

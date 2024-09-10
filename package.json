@@ -9,10 +9,13 @@
   "author": "WhosWiFi",
   "license": "ISC",
   "dependencies": {
+    "better-sqlite3": "^11.2.1",
     "cookie-parser": "^1.4.6",
     "express": "^4.19.2",
     "express-session": "^1.18.0",
     "mysql": "^2.18.1",
-    "mysql2": "^3.11.0"
+    "mysql2": "^3.11.0",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7"
   }
 }
