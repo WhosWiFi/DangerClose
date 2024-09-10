@@ -76,8 +76,37 @@
             testElement.innerHTML = data.query;
             document.body.appendChild(testElement);
 
+            console.log(testElement.innerHTML);
+
+            // Function to detect various XSS payloads
+            function isXSSDetected(element) {
+                var detected = false;
+                
+                // Check for <script> tags
+                var scripts = element.getElementsByTagName('script');
+                if (scripts.length > 0) {
+                    detected = true;
+                }
+                
+                // Check for <img> tags with onerror attributes
+                var images = element.getElementsByTagName('img');
+                for (var i = 0; i < images.length; i++) {
+                    if (images[i].hasAttribute('onerror')) {
+                        detected = true;
+                        break;
+                    }
+                }
+                
+                // Check for other potentially dangerous tags or attributes
+                var elementsWithAttributes = element.querySelectorAll('[onerror], [onload], [onclick], [onmouseover], [onfocus], [onchange], [onsubmit]');
+                if (elementsWithAttributes.length > 0) {
+                    detected = true;
+                }
+                
+                return detected;
+            }
             // Check if XSS payload was executed
-            if (testElement.innerHTML.includes('alert(document.cookie)')) {
+            if (isXSSDetected(testElement) && testElement.innerHTML.includes('alert(document.cookie)')) {
                 // Request the flag from the server
                 fetch('/xss-starter-12456-sTwsC')
                     .then(response => response.text())
@@ -85,7 +114,7 @@
                             document.getElementById('resultText').innerHTML = `XSS Vulnerability detected! Flag: ${xss_starter_flag}`;
                     });
             } else {
-                document.getElementById('resultText').innerHTML = "Response received. Check for XSS.";
+                document.getElementById('resultText').innerHTML = "Response received. No XSS Detected.";
             }
 
             // Clean up
