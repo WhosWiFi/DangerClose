@@ -93,6 +93,14 @@ app.get('/xss-starter-12456-sTwsC', (req, res) => {
   res.send(flags.xss_starter_flag);
 });
 
+app.get('/xss_lab_description', function (req, res) {
+  fs.readFile('xss_lab_description.html', function (err, data) {
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(data);
+    return res.end();
+  });
+});
+
 app.get('/socialmedia_starter', function (req, res) {
   // Set a custom cookie named "user-secret" with the value "secret"
   res.cookie('session', 'cookie_obtained'); //no httponly flag to prevent JavaScript from accessing the cookie.
