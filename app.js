@@ -93,9 +93,16 @@ app.get('/xss-starter-12456-sTwsC', (req, res) => {
 
 
 // Handle xss starter flag retrieval
-app.get('/xss-intermediate-8432876653-dIwsPetgF', (req, res) => {
-  // Provide the flag
-  res.send(flags.xss_intermediate_flag);
+app.post('/xss-intermediate-8432876653-dIwsPetgF', (req, res) => {
+  const { success } = req.body;
+
+  if (success === true) {
+      // Provide the flag if the success condition is true
+      res.send(flags.xss_intermediate_flag);
+  } else {
+      // Send 403 Unauthorized if the request is anything else
+      res.status(403).send('Unauthorized');
+  }
 });
 
 app.get('/xss_starter_lab_description', function (req, res) {

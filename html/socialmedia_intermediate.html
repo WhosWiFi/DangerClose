@@ -140,7 +140,13 @@
             // Check if XSS payload was executed
             if (isXSSDetected(testElement) && testElement.innerHTML.includes('alert') && testElement.innerHTML.includes('XSS')) {
                 // Request the flag from the server
-                fetch('/xss-intermediate-8432876653-dIwsPetgF')
+                fetch('/xss-intermediate-8432876653-dIwsPetgF', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ success: true })
+                })
                     .then(response => response.text())
                     .then(xss_intermediate_flag => {
                         document.getElementById('resultText').innerHTML = `XSS Vulnerability detected! Flag: ${xss_intermediate_flag}`;
