@@ -138,7 +138,7 @@
             }
 
             // Check if XSS payload was executed
-            if (isXSSDetected(testElement) && testElement.innerHTML.includes('alert') && testElement.innerHTML.includes('document') && testElement.innerHTML.includes('cookie')) {
+            if (isXSSDetected(testElement) && testElement.innerHTML.includes('alert') && testElement.innerHTML.includes('XSS')) {
                 // Request the flag from the server
                 fetch('/xss-intermediate-8432876653-dIwsPetgF')
                     .then(response => response.text())
