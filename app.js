@@ -125,6 +125,7 @@ app.get('/socialmedia_starter', function (req, res) {
 });
 
 app.get('/socialmedia_intermediate', function (req, res) {
+  res.cookie('session', 'cookie_obtained'); //no httponly flag to prevent JavaScript from accessing the cookie.
   fs.readFile('html/socialmedia_intermediate.html', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write(data);
@@ -133,7 +134,7 @@ app.get('/socialmedia_intermediate', function (req, res) {
 });
 
 app.get('/socialmedia_advanced', function (req, res) {
-  res.cookie('session', 'WiFi{X5S_s3Ssi0n_l34k}'); //no httponly flag to prevent JavaScript from accessing the cookie.
+  res.cookie('session', 'cookie_obtained'); //no httponly flag to prevent JavaScript from accessing the cookie.
 
   fs.readFile('html/socialmedia_advanced.html', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/html'});
