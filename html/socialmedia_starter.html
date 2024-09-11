@@ -153,7 +153,13 @@
             // Check if XSS payload was executed
             if (isXSSDetected(testElement) && testElement.innerHTML.includes('alert(document.cookie)')) {
                 // Request the flag from the server
-                fetch('/xss-starter-12456-sTwsC')
+                fetch('/xss-starter-12456-sTwsC', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ success: true })
+                })
                     .then(response => response.text())
                     .then(xss_starter_flag => {
                             document.getElementById('resultText').innerHTML = `XSS Vulnerability detected! Flag: ${xss_starter_flag}`;
