@@ -67,30 +67,30 @@
 <script>
     // Function to sanitize user input against a blacklist of characters
     function sanitizeInput(input) {
-        // Define a blacklist of characters commonly used in XSS attacks
-        const blacklist = ['(', ')', ';'];
         console.log(input);
-        // Check if input contains any blacklisted characters
+        // Define a blacklist of patterns commonly used in XSS attacks
+        const blacklist = ['alert(', 'alert%20'];
+        // Check if input contains any blacklisted patterns
         for (let i = 0; i < blacklist.length; i++) {
             if (input.includes(blacklist[i])) {
-                // Return message when blacklisted characters are found
+                // Return message when blacklisted patterns are found
                 return "Malicious input detected. Sending IP address to Interpol...";
             }
         }
-
-        // If no blacklisted characters are found, return the original input
+        // If no blacklisted patterns are found, return the original input
         return input;
     }
 
     function showResults() {
         var query = document.getElementById('searchQuery').value;
+        var sanitizedQuery = sanitizeInput(query);
 
         fetch('/xssCheck', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ query: query }),
+            body: JSON.stringify({ query: sanitizedQuery }), // Send sanitizedQuery instead of query
         })
         .then(response => response.json())
         .then(data => {
@@ -99,53 +99,28 @@
             testElement.innerHTML = data.query;
             document.body.appendChild(testElement);
 
-            console.log(testElement.innerHTML);
 
             function isXSSDetected(element) {
                 var detected = false;
 
-                // Check for <script> tags
-                var scripts = element.getElementsByTagName('script');
-                if (scripts.length > 0) {
-                    detected = true;
-                }
-                
-                // Check for <img> tags with onerror attributes
-                var images = element.getElementsByTagName('img');
-                for (var i = 0; i < images.length; i++) {
-                    if (images[i].hasAttribute('onerror')) {
-                        detected = true;
-                        break;
+                // Select all elements within the given element
+                var allElements = element.querySelectorAll('*'); 
+
+                // Loop through each element
+                allElements.forEach(function(el) {
+                    // Loop through each attribute of the element
+                    for (var i = 0; i < el.attributes.length; i++) {
+                        var attr = el.attributes[i];
+                        var attrValue = attr.value;
+
+                        // Check if the attribute value contains eval()
+                        if (attrValue && attrValue.includes('eval(')) {
+                            detected = true;  // XSS detected if eval() is found
+                            break;
+                        }
                     }
-                }
-                
-                // Check for <iframe> and <object> tags
-                var iframes = element.getElementsByTagName('iframe');
-                if (iframes.length > 0) {
-                    detected = true;
-                }
-                
-                var objects = element.getElementsByTagName('object');
-                if (objects.length > 0) {
-                    detected = true;
-                }
-                
-                // Check for other potentially dangerous attributes
-                var dangerousAttributes = element.querySelectorAll('[onerror], [onload], [onclick], [onmouseover], [onfocus], [onchange], [onsubmit], [onkeydown], [onkeyup], [onkeypress], [onblur], [onfocusin], [onfocusout]');
-                if (dangerousAttributes.length > 0) {
-                    detected = true;
-                }
-                
-                // Check for potentially dangerous inline styles
-                var dangerousStyles = element.querySelectorAll('[style]');
-                for (var j = 0; j < dangerousStyles.length; j++) {
-                    var style = dangerousStyles[j].getAttribute('style');
-                    if (style && style.includes('expression(')) {
-                        detected = true;
-                        break;
-                    }
-                }
-                
+                });
+
                 // Check for potentially dangerous HTML attributes
                 var potentiallyDangerousAttributes = element.querySelectorAll('[src], [href], [data], [background]');
                 for (var k = 0; k < potentiallyDangerousAttributes.length; k++) {
@@ -158,22 +133,17 @@
                         break;
                     }
                 }
-                
-                // Check for malformed or suspicious HTML
-                var htmlContent = element.innerHTML.toLowerCase();
-                if (htmlContent.includes('<svg') || htmlContent.includes('<math')) {
-                    detected = true;
-                }
-                
+
                 return detected;
             }
+
             // Check if XSS payload was executed
-            if (isXSSDetected(testElement) && testElement.innerHTML.includes('alert(document.cookie)')) {
+            if (isXSSDetected(testElement) && testElement.innerHTML.includes('alert') && testElement.innerHTML.includes('document') && testElement.innerHTML.includes('cookie')) {
                 // Request the flag from the server
-                fetch('/xss-starter-12456-sTwsC')
+                fetch('/xss-intermediate-8432876653-dIwsPetgF')
                     .then(response => response.text())
-                    .then(xss_starter_flag => {
-                            document.getElementById('resultText').innerHTML = `XSS Vulnerability detected! Flag: ${xss_starter_flag}`;
+                    .then(xss_intermediate_flag => {
+                        document.getElementById('resultText').innerHTML = `XSS Vulnerability detected! Flag: ${xss_intermediate_flag}`;
                     });
             } else {
                 document.getElementById('resultText').innerHTML = "Response received. No XSS Detected.";
@@ -186,6 +156,7 @@
             console.error('Error:', error);
         });
     }
+
 </script>
 
 </body>

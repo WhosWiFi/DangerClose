@@ -85,14 +85,29 @@ app.post('/xssCheck', (req, res) => {
   }
 });
 
-// Handle flag retrieval
+// Handle xss starter flag retrieval
 app.get('/xss-starter-12456-sTwsC', (req, res) => {
   // Provide the flag
   res.send(flags.xss_starter_flag);
 });
 
-app.get('/xss_lab_description', function (req, res) {
-  fs.readFile('html/xss_lab_description.html', function (err, data) {
+
+// Handle xss starter flag retrieval
+app.get('/xss-intermediate-8432876653-dIwsPetgF', (req, res) => {
+  // Provide the flag
+  res.send(flags.xss_intermediate_flag);
+});
+
+app.get('/xss_starter_lab_description', function (req, res) {
+  fs.readFile('html/xss_starter_lab_description.html', function (err, data) {
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(data);
+    return res.end();
+  });
+});
+
+app.get('/xss_intermediate_lab_description', function (req, res) {
+  fs.readFile('html/xss_intermediate_lab_description.html', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write(data);
     return res.end();
@@ -110,8 +125,6 @@ app.get('/socialmedia_starter', function (req, res) {
 });
 
 app.get('/socialmedia_intermediate', function (req, res) {
-  res.cookie('session', 'WiFi{X5S_Bl4CK_L13T}'); //no httponly flag to prevent JavaScript from accessing the cookie.
-
   fs.readFile('html/socialmedia_intermediate.html', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write(data);
