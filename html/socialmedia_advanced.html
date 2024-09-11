@@ -65,31 +65,74 @@
 </div>
 
 <script>
-    // Function to sanitize user input against a blacklist of characters
-    function sanitizeInput(input) {
-        // Define a blacklist of characters commonly used in XSS attacks
-        const blacklist = ['(', ')', ';'];
-        console.log(input);
-        // Check if input contains any blacklisted characters
-        for (let i = 0; i < blacklist.length; i++) {
-            if (input.includes(blacklist[i])) {
-                // Return message when blacklisted characters are found
-                return "Malicious input detected. Sending IP address to Interpol...";
-            }
-        }
-
-        // If no blacklisted characters are found, return the original input
-        return input;
-    }
-
     function showResults() {
         var query = document.getElementById('searchQuery').value;
-        // Sanitize the input using the blacklist
-        var sanitizedQuery = sanitizeInput(query);
 
-        // Log for debugging purposes
-        console.log("Sanitized Query: ", sanitizedQuery);
-        document.getElementById('resultText').innerHTML = "You searched for: " + sanitizedQuery;
+        fetch('/xssCheck', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ query: query }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Create a dummy element to test if XSS payload is executed
+            var testElement = document.createElement('div');
+            testElement.innerHTML = data.query;
+            document.body.appendChild(testElement);
+
+            console.log(testElement.innerHTML);
+
+            function isXSSDetected(element) {
+                var detected = false;
+
+                
+                // Check for potentially dangerous HTML attributes
+                var potentiallyDangerousAttributes = element.querySelectorAll('[src], [href], [data], [background]');
+                for (var k = 0; k < potentiallyDangerousAttributes.length; k++) {
+                    var attrValue = potentiallyDangerousAttributes[k].getAttribute('src') || 
+                                    potentiallyDangerousAttributes[k].getAttribute('href') || 
+                                    potentiallyDangerousAttributes[k].getAttribute('data') || 
+                                    potentiallyDangerousAttributes[k].getAttribute('background');
+                    if (attrValue && attrValue.includes('javascript:')) {
+                        detected = true;
+                        break;
+                    }
+                }
+                
+                // Check for malformed or suspicious HTML
+                var htmlContent = element.innerHTML.toLowerCase();
+                if (htmlContent.includes('<svg') || htmlContent.includes('<math')) {
+                    detected = true;
+                }
+                
+                return detected;
+            }
+            // Check if XSS payload was executed
+            if (isXSSDetected(testElement) && testElement.innerHTML.includes('alert(document.cookie)')) {
+                // Request the flag from the server
+                fetch('/xss-advanced-2398460-wPqzzLSieXj', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ success: true })
+                })
+                    .then(response => response.text())
+                    .then(xss_advanced_flag => {
+                            document.getElementById('resultText').innerHTML = `XSS Vulnerability detected! Flag: ${xss_advanced_flag}`;
+                    });
+            } else {
+                document.getElementById('resultText').innerHTML = "Response received. No XSS Detected.";
+            }
+
+            // Clean up
+            document.body.removeChild(testElement);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
     }
 </script>
 

@@ -7,10 +7,26 @@ var cookieParser = require('cookie-parser');
 const Database = require('better-sqlite3');
 const database = new Database(':memory:');
 
+const setCspHeader = (req, res, next) => {
+  res.setHeader("Content-Security-Policy", 
+      "default-src 'self'; " +          // Allow only same-origin resources
+      "script-src 'self'; " +           // Restrict scripts to same-origin
+      "img-src 'self'; " +              // Restrict images to same-origin
+      "connect-src 'self'; " +          // Restrict AJAX/WebSocket to same-origin
+      "frame-src 'none'; " +            // Prevent iframes
+      "object-src 'none'; " +           // Disallow embedding objects
+      "base-uri 'none'; " +             // Disallow base tag to prevent redirection
+      "form-action 'self'; " +          // Restrict forms to same-origin actions
+      "script-src 'self' 'nonce-xyz';"  // Block inline scripts & use a nonce
+  );
+  next();
+};
+
 // Middleware
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use('/socialmedia_advanced', setCspHeader);
 
 // Session middleware setup
 app.use(session({
@@ -48,8 +64,8 @@ insertBook.run('The Giver', 'A world living without color.');
 
 
 const userPoints = {points: 0};
-var flagChecks = {"xss_starter_check": false, "xss_intermediate_check": false, "fuzzing_check": false, "sqlite3_check": false};
-var flags = {"xss_starter_flag": "WiFi{X5S_s3Ssi0n_l34k}", "xss_intermediate_flag": "WiFi{X5S_Bl4CK_L13T}", "fuzzing_flag": false, "sqlite3_flag": false}
+var flagChecks = {"xss_starter_check": false, "xss_intermediate_check": false, "xss_advanced_check": false, "fuzzing_check": false, "sqlite3_check": false};
+var flags = {"xss_starter_flag": "WiFi{X5S_s3Ssi0n_l34k}", "xss_intermediate_flag": "WiFi{X5S_Bl4CK_L13T}", "xss_advanced_flag": "WiFi{X5S_CSP_W1Z4Rd}", "fuzzing_flag": false, "sqlite3_flag": false}
 
 app.get('/', function (req, res) {
   fs.readFile('html/home.html', function (err, data) {
@@ -112,6 +128,19 @@ app.post('/xss-intermediate-8432876653-dIwsPetgF', (req, res) => {
   }
 });
 
+// Handle xss starter flag retrieval
+app.post('/xss-advanced-2398460-wPqzzLSieXj', (req, res) => {
+  const { success } = req.body;
+
+  if (success === true) {
+      // Provide the flag if the success condition is true
+      res.send(flags.xss_advanced_flag);
+  } else {
+      // Send 403 Unauthorized if the request is anything else
+      res.status(403).send('Unauthorized');
+  }
+});
+
 app.get('/xss_starter_lab_description', function (req, res) {
   fs.readFile('html/xss_starter_lab_description.html', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/html'});
@@ -122,6 +151,14 @@ app.get('/xss_starter_lab_description', function (req, res) {
 
 app.get('/xss_intermediate_lab_description', function (req, res) {
   fs.readFile('html/xss_intermediate_lab_description.html', function (err, data) {
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(data);
+    return res.end();
+  });
+});
+
+app.get('/xss_advanced_lab_description', function (req, res) {
+  fs.readFile('html/xss_advanced_lab_description.html', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write(data);
     return res.end();
@@ -249,6 +286,11 @@ app.post('/validate_flag', function (req, res) {
   if (flag == 'WiFi{X5S_Bl4CK_L13T}' && flagChecks.xss_intermediate_check == false) {
     flagChecks.xss_intermediate_flag = true;
     userPoints.points += 30;
+    return res.redirect('/get-points');
+  }
+  if (flag == 'WiFi{X5S_CSP_W1Z4Rd}' && flagChecks.xss_advanced_check == false) {
+    flagChecks.xss_advanced_flag = true;
+    userPoints.points += 50;
     return res.redirect('/get-points');
   }
   if (flag == 'WiFi{sQL_m4sT3r}') {
