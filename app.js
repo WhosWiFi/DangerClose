@@ -181,14 +181,11 @@ app.get('/socialmedia_advanced', (req, res) =>{
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>XSS Bypass Lab</title>
+      <title>CSP Bypass Lab</title>
     </head>
     <body>
-      <h1>XSS Bypass Lab</h1>
-      <p>Try to execute a script to demonstrate XSS bypass.</p>
-      <script nonce="${secret_nonce_key}">
-        console.log('This script should be allowed to run because of the nonce.');
-      </script>
+      <h1>Content-Security Policy Bypass Lab</h1>
+      <p>Try to execute a script to demonstrate CSP bypass.</p>
       <form id="xss-form" action="/cspCheck" method="post">
         <input type="text" name="payload" placeholder="Enter XSS payload">
         <button type="submit">Submit</button>
@@ -216,7 +213,7 @@ app.post('/cspCheck', (req, res) => {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>XSS Bypass Result</title>
+        <title>CSP Bypass Result</title>
       </head>
       <body>
         <h1>XSS Payload Result</h1>
@@ -236,10 +233,10 @@ app.post('/cspCheck', (req, res) => {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>XSS Bypass Result</title>
+        <title>CSP Bypass Result</title>
       </head>
       <body>
-        <h1>XSS Payload Result</h1>
+        <h1>CSP Payload Result</h1>
         <p>You submitted the following payload:</p>
         <pre>${payload}</pre>
         <script nonce="${secret_nonce_key}">
