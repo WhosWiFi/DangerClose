@@ -69,7 +69,7 @@
     function sanitizeInput(input) {
         console.log(input);
         // Define a blacklist of patterns commonly used in XSS attacks
-        const blacklist = ['alert(', 'alert%20'];
+        const blacklist = ['alert(', 'alert%20', '<script>'];
         // Check if input contains any blacklisted patterns
         for (let i = 0; i < blacklist.length; i++) {
             if (input.includes(blacklist[i])) {
@@ -120,6 +120,15 @@
                         }
                     }
                 });
+
+                // Check for <img> tags with onerror attributes
+                var images = element.getElementsByTagName('img');
+                for (var i = 0; i < images.length; i++) {
+                    if (images[i].hasAttribute('onerror')) {
+                        detected = true;
+                        break;
+                    }
+                }
 
                 // Check for potentially dangerous HTML attributes
                 var potentiallyDangerousAttributes = element.querySelectorAll('[src], [href], [data], [background]');

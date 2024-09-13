@@ -7,18 +7,10 @@ var cookieParser = require('cookie-parser');
 const Database = require('better-sqlite3');
 const database = new Database(':memory:');
 
+const nonce = 'prod';
+
 const setCspHeader = (req, res, next) => {
-  res.setHeader("Content-Security-Policy", 
-      "default-src 'self'; " +          // Allow only same-origin resources
-      "script-src 'self'; " +           // Restrict scripts to same-origin
-      "img-src 'self'; " +              // Restrict images to same-origin
-      "connect-src 'self'; " +          // Restrict AJAX/WebSocket to same-origin
-      "frame-src 'none'; " +            // Prevent iframes
-      "object-src 'none'; " +           // Disallow embedding objects
-      "base-uri 'none'; " +             // Disallow base tag to prevent redirection
-      "form-action 'self'; " +          // Restrict forms to same-origin actions
-      "script-src 'self' 'nonce-xyz';"  // Block inline scripts & use a nonce
-  );
+  res.setHeader('Content-Security-Policy', `script-src 'self' 'nonce-${nonce}'`);
   next();
 };
 
@@ -26,7 +18,6 @@ const setCspHeader = (req, res, next) => {
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use('/socialmedia_advanced', setCspHeader);
 
 // Session middleware setup
 app.use(session({
@@ -184,7 +175,7 @@ app.get('/socialmedia_intermediate', function (req, res) {
   });
 });
 
-app.get('/socialmedia_advanced', function (req, res) {
+app.get('/socialmedia_advanced', setCspHeader, (req, res) =>{
   res.cookie('session', 'cookie_obtained'); //no httponly flag to prevent JavaScript from accessing the cookie.
 
   fs.readFile('html/socialmedia_advanced.html', function (err, data) {
