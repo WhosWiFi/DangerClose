@@ -8,6 +8,7 @@ const Database = require('better-sqlite3');
 const database = new Database(':memory:');
 
 const secret_nonce_key = 'secret-nonce-key';
+const advanced_flag = 'WiFi{X5S_CSP_W1Z4Rd}';
 
 // Middleware
 app.use(express.json());
@@ -244,6 +245,7 @@ app.post('/cspCheck', (req, res) => {
         <script nonce="${secret_nonce_key}">
           ${payload}
         </script>
+        <h1>${advanced_flag}</h1>
       </body>
       </html>
     `);
