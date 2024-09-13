@@ -7,12 +7,7 @@ var cookieParser = require('cookie-parser');
 const Database = require('better-sqlite3');
 const database = new Database(':memory:');
 
-const nonce = 'prod';
-
-const setCspHeader = (req, res, next) => {
-  res.setHeader('Content-Security-Policy', `script-src 'self' 'nonce-${nonce}'`);
-  next();
-};
+const nonce = 'secretKey';
 
 // Middleware
 app.use(express.json());
@@ -175,15 +170,62 @@ app.get('/socialmedia_intermediate', function (req, res) {
   });
 });
 
-app.get('/socialmedia_advanced', setCspHeader, (req, res) =>{
+app.get('/socialmedia_advanced', (req, res) =>{
   res.cookie('session', 'cookie_obtained'); //no httponly flag to prevent JavaScript from accessing the cookie.
+  res.setHeader('Content-Security-Policy', `script-src 'self' 'nonce-${nonce}'`);
 
-  fs.readFile('html/socialmedia_advanced.html', function (err, data) {
-    res.writeHead(200, {'Content-Type': 'text/html'});
-    res.write(data);
-    return res.end();
-  });
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>XSS Bypass Lab</title>
+    </head>
+    <body>
+      <h1>XSS Bypass Lab</h1>
+      <p>Try to execute a script to demonstrate XSS bypass.</p>
+      <script nonce="${nonce}">
+        console.log('This script should be allowed to run because of the nonce.');
+      </script>
+      <form id="xss-form" action="/cspCheck" method="post">
+        <input type="text" name="payload" placeholder="Enter XSS payload">
+        <button type="submit">Submit</button>
+      </form>
+    </body>
+    </html>
+  `);
 });
+
+app.post('/cspCheck', (req, res) => {
+  const payload = req.body.payload;
+  
+  // Check if payload contains the nonce
+  if (!payload.includes(nonce)) {
+    return res.status(403).send('Unauthorized');
+  }
+  else {
+    res.send(`
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>XSS Bypass Result</title>
+      </head>
+      <body>
+        <h1>XSS Payload Result</h1>
+        <p>You submitted the following payload:</p>
+        <pre>${payload}</pre>
+        <script nonce="example-nonce">
+          ${payload}
+        </script>
+      </body>
+      </html>
+    `);
+  }
+});
+
 
 app.get('/book_lookup', function (req, res) {
   fs.readFile('html/bookstore.html', function (err, data) {

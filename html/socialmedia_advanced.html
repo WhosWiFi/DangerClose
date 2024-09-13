@@ -83,34 +83,8 @@
             document.body.appendChild(testElement);
 
             console.log(testElement.innerHTML);
-
-            function isXSSDetected(element) {
-                var detected = false;
-
-                
-                // Check for potentially dangerous HTML attributes
-                var potentiallyDangerousAttributes = element.querySelectorAll('[src], [href], [data], [background]');
-                for (var k = 0; k < potentiallyDangerousAttributes.length; k++) {
-                    var attrValue = potentiallyDangerousAttributes[k].getAttribute('src') || 
-                                    potentiallyDangerousAttributes[k].getAttribute('href') || 
-                                    potentiallyDangerousAttributes[k].getAttribute('data') || 
-                                    potentiallyDangerousAttributes[k].getAttribute('background');
-                    if (attrValue && attrValue.includes('javascript:')) {
-                        detected = true;
-                        break;
-                    }
-                }
-                
-                // Check for malformed or suspicious HTML
-                var htmlContent = element.innerHTML.toLowerCase();
-                if (htmlContent.includes('<svg') || htmlContent.includes('<math')) {
-                    detected = true;
-                }
-                
-                return detected;
-            }
             // Check if XSS payload was executed
-            if (isXSSDetected(testElement) && testElement.innerHTML.includes('alert(document.cookie)')) {
+            if (testElement.innerHTML.includes('alert(document.cookie)')) {
                 // Request the flag from the server
                 fetch('/xss-advanced-2398460-wPqzzLSieXj', {
                     method: 'POST',
