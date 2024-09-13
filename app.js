@@ -326,23 +326,23 @@ app.get('/images/flagbackground.jpeg', function (req, res) {
 app.post('/validate_flag', function (req, res) {
   const { flag } = req.body;
 
-  if (flag == 'WiFi{y0U_kN0w_fuZZ1Ng!}' && flagChecks.fuzzing_check == false) {
-    flagChecks.fuzzing_flag = true;
+  if (flag == 'WiFi{y0U_kN0w_fuZZ1Ng!}' && !(flagChecks.fuzzing_check)) {
+    flagChecks.fuzzing_check = true;
     userPoints.points += 10;
     return res.redirect('/get-points');
   } 
-  if (flag == 'WiFi{X5S_s3Ssi0n_l34k}' && flagChecks.xss_starter_check == false) {
-    flagChecks.xss_starter_flag = true;
+  if (flag == 'WiFi{X5S_s3Ssi0n_l34k}' && !(flagChecks.xss_starter_check)) {
+    flagChecks.xss_starter_check = true;
     userPoints.points += 10;
     return res.redirect('/get-points');
   }
-  if (flag == 'WiFi{X5S_Bl4CK_L13T}' && flagChecks.xss_intermediate_check == false) {
-    flagChecks.xss_intermediate_flag = true;
+  if (flag == 'WiFi{X5S_Bl4CK_L13T}' && !(flagChecks.xss_intermediate_check)) {
+    flagChecks.xss_intermediate_check = true;
     userPoints.points += 30;
     return res.redirect('/get-points');
   }
-  if (flag == 'WiFi{X5S_CSP_W1Z4Rd}' && flagChecks.xss_advanced_check == false) {
-    flagChecks.xss_advanced_flag = true;
+  if (flag == 'WiFi{X5S_CSP_W1Z4Rd}' && !(flagChecks.xss_advanced_check)) {
+    flagChecks.xss_advanced_check = true;
     userPoints.points += 50;
     return res.redirect('/get-points');
   }
