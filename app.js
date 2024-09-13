@@ -219,9 +219,6 @@ app.post('/cspCheck', (req, res) => {
         <h1>XSS Payload Result</h1>
         <p>Your payload was sanitized and the following result was processed:</p>
         <pre>${sanitizedPayload}</pre>
-        <script nonce="${secret_nonce_key}">
-          console.log('Sanitized payload output: ${sanitizedPayload}');
-        </script>
       </body>
       </html>
     `);
