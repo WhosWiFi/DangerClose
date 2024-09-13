@@ -67,9 +67,19 @@
 <script>
     // Function to sanitize user input against a blacklist of characters
     function sanitizeInput(input) {
-        const sanitized = input.replace(/[()+\[\]{}\\|]/g, '');
-        return sanitized;
-}
+        console.log(input);
+        // Define a blacklist of patterns commonly used in XSS attacks
+        const blacklist = ['alert(', 'alert%20', '<script>'];
+        // Check if input contains any blacklisted patterns
+        for (let i = 0; i < blacklist.length; i++) {
+            if (input.includes(blacklist[i])) {
+                // Return message when blacklisted patterns are found
+                return "Malicious input detected. Sending IP address to Interpol...";
+            }
+        }
+        // If no blacklisted patterns are found, return the original input
+        return input;
+    }
 
     function showResults() {
         var query = document.getElementById('searchQuery').value;
