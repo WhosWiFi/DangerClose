@@ -7,7 +7,7 @@ var cookieParser = require('cookie-parser');
 const Database = require('better-sqlite3');
 const database = new Database(':memory:');
 
-const nonce = 'secretKey';
+const secret_nonce_key = 'secret-nonce-key';
 
 // Middleware
 app.use(express.json());
@@ -172,7 +172,7 @@ app.get('/socialmedia_intermediate', function (req, res) {
 
 app.get('/socialmedia_advanced', (req, res) =>{
   res.cookie('session', 'cookie_obtained'); //no httponly flag to prevent JavaScript from accessing the cookie.
-  res.setHeader('Content-Security-Policy', `script-src 'self' 'nonce-${nonce}'`);
+  res.setHeader('Content-Security-Policy', `script-src 'self' 'nonce-${secret_nonce_key}'`);
 
   res.send(`
     <!DOCTYPE html>
@@ -185,7 +185,7 @@ app.get('/socialmedia_advanced', (req, res) =>{
     <body>
       <h1>XSS Bypass Lab</h1>
       <p>Try to execute a script to demonstrate XSS bypass.</p>
-      <script nonce="${nonce}">
+      <script nonce="${secret_nonce_key}">
         console.log('This script should be allowed to run because of the nonce.');
       </script>
       <form id="xss-form" action="/cspCheck" method="post">
@@ -197,12 +197,36 @@ app.get('/socialmedia_advanced', (req, res) =>{
   `);
 });
 
+function sanitizeInput(input) {
+  const sanitized = input.replace(/[<>:?';:!@#$%^&*()\-_+=\[\]{}\\|]/g, '');
+  return sanitized;
+}
+
 app.post('/cspCheck', (req, res) => {
   const payload = req.body.payload;
   
   // Check if payload contains the nonce
-  if (!payload.includes(nonce)) {
-    return res.status(403).send('Unauthorized');
+  if (!payload.includes(secret_nonce_key)) {
+    // If nonce is not included, sanitize the input by stripping unwanted characters
+    const sanitizedPayload = sanitizeInput(payload);
+    res.send(`
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>XSS Bypass Result</title>
+      </head>
+      <body>
+        <h1>XSS Payload Result</h1>
+        <p>Your payload was sanitized and the following result was processed:</p>
+        <pre>${sanitizedPayload}</pre>
+        <script nonce="${secret_nonce_key}">
+          console.log('Sanitized payload output: ${sanitizedPayload}');
+        </script>
+      </body>
+      </html>
+    `);
   }
   else {
     res.send(`
@@ -217,7 +241,7 @@ app.post('/cspCheck', (req, res) => {
         <h1>XSS Payload Result</h1>
         <p>You submitted the following payload:</p>
         <pre>${payload}</pre>
-        <script nonce="example-nonce">
+        <script nonce="${secret_nonce_key}">
           ${payload}
         </script>
       </body>
