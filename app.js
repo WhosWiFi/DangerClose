@@ -267,7 +267,7 @@ app.get('/book_lookup', function (req, res) {
       <div class="search-bar">
         <h1>Book Lookup</h1>
         <form action="/sql_query" method="post">
-          <select name="userInput">
+          <select name="sqlQuery">
             ${books.map(book => `<option value="${book.bookname}">${book.bookname}</option>`).join('')}
           </select>
           <button type="submit">Submit</button>
@@ -283,10 +283,10 @@ app.get('/book_lookup', function (req, res) {
 });
 
 app.post('/sql_query', function (req, res) {
-  const { userInput } = req.body; // Get the book title selected from the dropdown
+  const { sqlQuery } = req.body; // Get the book title selected from the dropdown
 
   // Vulnerable SQL query with single quotes around the userInput
-  const query = `SELECT bookname, description FROM books WHERE bookname = '${userInput}'`;
+  const query = `SELECT bookname, description FROM books WHERE bookname = '${sqlQuery}'`;
 
   try {
     const rows = database.prepare(query).all(); // Execute the SQL query
@@ -318,7 +318,7 @@ app.post('/sql_query', function (req, res) {
           <title>No Results Found</title>
         </head>
         <body>
-          <h1>No results found for "${userInput}"</h1>
+          <h1>No results found for "${sqlQuery}"</h1>
         </body>
         </html>
       `);
