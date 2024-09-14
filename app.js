@@ -204,7 +204,7 @@ app.post('/cspCheck', (req, res) => {
   const payload = req.body.payload;
   
   // Check if payload contains the nonce
-  if (!payload.includes(secret_nonce_key)) {
+  if (!payload.includes('nonce="secret-nonce-key"')) {
     // If nonce is not included, sanitize the input by stripping unwanted characters
     const sanitizedPayload = sanitizeInput(payload);
     res.send(`
