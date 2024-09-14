@@ -248,17 +248,84 @@ app.post('/cspCheck', (req, res) => {
 
 
 app.get('/book_lookup', function (req, res) {
-  fs.readFile('html/bookstore.html', function (err, data) {
-    res.writeHead(200, {'Content-Type': 'text/html'});
-    res.write(data);
-    return res.end();
-  });
+  // Fetch all book titles for the dropdown
+  const books = database.prepare('SELECT bookname FROM books').all();
+
+  // Send the HTML with the book dropdown
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Book Lookup</title>
+    </head>
+    <body>
+      <div class="header">
+        <h1>Welcome to SocialMedia</h1>
+      </div>
+      <div class="search-bar">
+        <h1>Book Lookup</h1>
+        <form action="/sql_query" method="post">
+          <select name="userInput">
+            ${books.map(book => `<option value="${book.bookname}">${book.bookname}</option>`).join('')}
+          </select>
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+      <div class="result" id="resultBox">
+        <h2>Search Results:</h2>
+        <p id="resultText"></p>
+      </div>
+    </body>
+    </html>
+  `);
 });
 
-app.post('/sql_query', function (req, res) { 
-  const { userInput } = req.body;
-  const rows = database.prepare('SELECT bookname FROM books WHERE bookname =' + userInput + ';').all();
-  res.json(rows);
+app.post('/sql_query', function (req, res) {
+  const { userInput } = req.body; // Get the book title selected from the dropdown
+
+  // Vulnerable SQL query with single quotes around the userInput
+  const query = `SELECT bookname, description FROM books WHERE bookname = '${userInput}'`;
+
+  try {
+    const rows = database.prepare(query).all(); // Execute the SQL query
+    if (rows.length > 0) {
+      // Return book details in HTML response
+      res.send(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Book Search Result</title>
+        </head>
+        <body>
+          <h1>Search Results</h1>
+          <ul>
+            ${rows.map(row => `<li>${row.bookname}: ${row.description}</li>`).join('')}
+          </ul>
+        </body>
+        </html>
+      `);
+    } else {
+      res.send(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>No Results Found</title>
+        </head>
+        <body>
+          <h1>No results found for "${userInput}"</h1>
+        </body>
+        </html>
+      `);
+    }
+  } catch (err) {
+    res.status(500).send('SQL query error: ' + err.message); // Handle SQL errors
+  }
 });
 
 app.get('/get-points', function (req, res) {
