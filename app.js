@@ -25,79 +25,7 @@ app.use(session({
 
 
 // Store the current CAPTCHA code and SVG data
-let currentCaptcha = null;
-let captchaSvg = null;
-
-// Middleware to generate CAPTCHA
-function generateCaptcha(req, res, next) {
-  const captcha = svgCaptcha.create({
-    size: 4,
-    ignoreChars: '0oIl',
-    color: true,
-    background: '#eee'
-  });
-
-  currentCaptcha = captcha.text;
-  captchaSvg = captcha.data; // Save CAPTCHA SVG data
-  res.cookie('captcha', currentCaptcha); // Store CAPTCHA value in a cookie
-
-  // Fetch all book titles for the dropdown
-  const stmt = database.prepare('SELECT bookname FROM books');
-  const books = stmt.all();
-
-  // Send the HTML with the book dropdown and CAPTCHA
-  res.send(`
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Book Lookup</title>
-    </head>
-    <body>
-      <div class="header">
-        <h1>Welcome to SocialMedia</h1>
-      </div>
-      <div class="search-bar">
-        <h1>Book Lookup</h1>
-        <form action="/sql_query_intermediate" method="post">
-          <label for="bookname">Select Book:</label>
-          <select name="bookname" id="bookname">
-            ${books.map(book => `<option value="${book.bookname}">${book.bookname}</option>`).join('')}
-          </select>
-          <br>
-          <label for="captcha">Enter CAPTCHA:</label>
-          <img src="/captcha" alt="CAPTCHA">
-          <input type="text" id="captcha" name="captcha" required>
-          <button type="submit">Submit</button>
-        </form>
-      </div>
-      <div class="result" id="resultBox">
-        <h2>Search Results:</h2>
-        <p id="resultText"></p>
-      </div>
-    </body>
-    </html>
-  `);
-}
-
-// Route to serve CAPTCHA image
-app.get('/captcha', (req, res) => {
-  res.setHeader('Content-Type', 'image/svg+xml');
-  res.send(captchaSvg);
-});
-
-// Middleware to verify CAPTCHA
-function verifyCaptcha(req, res, next) {
-  const userCaptcha = req.body.captcha;
-  const correctCaptcha = req.cookies.captcha;
-
-  if (userCaptcha === correctCaptcha) {
-    next(); // CAPTCHA is correct, proceed to the next middleware
-  } else {
-    res.status(400).send('Incorrect CAPTCHA. Please try again.');
-  }
-}
+let currentCaptcha = '';
 
 // Database setup
 database.exec(`
@@ -408,15 +336,68 @@ app.post('/sql_query', function (req, res) {
 
 
 
-app.get('/book_lookup_intermediate', generateCaptcha);
+// Serve HTML form with CAPTCHA
+app.get('/book_lookup_intermediate', (req, res) => {
+  // Fetch all book titles for the dropdown
+  const books = database.prepare('SELECT bookname FROM books').all();
+
+  // Generate CAPTCHA
+  const captcha = svgCaptcha.create({
+    size: 4,
+    ignoreChars: '0oIl',
+    color: true,
+    background: '#eee'
+  });
+
+  currentCaptcha = captcha.text; // Save CAPTCHA text
+  const captchaSvg = captcha.data; // Save CAPTCHA SVG data
+
+  // Send the HTML with the book dropdown and CAPTCHA
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Book Lookup</title>
+    </head>
+    <body>
+      <div class="header">
+        <h1>Welcome to SocialMedia</h1>
+      </div>
+      <div class="search-bar">
+        <h1>Book Lookup</h1>
+        <form action="/sql_query_intermediate" method="post">
+          <select name="bookname">
+            ${books.map(book => `<option value="${book.bookname}">${book.bookname}</option>`).join('')}
+          </select>
+          <br>
+          <img src="data:image/svg+xml;base64,${Buffer.from(captchaSvg).toString('base64')}" alt="CAPTCHA">
+          <br>
+          <input type="text" name="captcha" placeholder="Enter CAPTCHA" required>
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+      <div class="result" id="resultBox">
+        <h2>Search Results:</h2>
+        <p id="resultText"></p>
+      </div>
+    </body>
+    </html>
+  `);
+});
 
 
-app.post('/sql_query_intermediate', verifyCaptcha, function (req, res) {
-  const { bookname } = req.body; // Get the book title selected from the dropdown
+app.post('/sql_query_intermediate', function (req, res) {
+  const { captcha, bookname } = req.body; // Get the book title selected from the dropdown
 
   // Vulnerable SQL query with single quotes around the userInput
   const query = `SELECT bookname, description FROM books WHERE bookname = '${bookname}'`;
   console.log(query);
+  // Validate CAPTCHA
+  if (captcha !== currentCaptcha) {
+    return res.send('CAPTCHA is incorrect. Please try again.');
+  }
 
   try {
     const rows = database.prepare(query).all(); // Execute the SQL query
@@ -456,6 +437,16 @@ app.post('/sql_query_intermediate', verifyCaptcha, function (req, res) {
   } catch (err) {
     res.status(500).send('SQL query error: ' + err.message); // Handle SQL errors
   }
+
+  // Generate a new CAPTCHA after processing the query
+  const newCaptcha = svgCaptcha.create({
+    size: 4,
+    ignoreChars: '0oIl',
+    color: true,
+    background: '#eee'
+  });
+
+  currentCaptcha = newCaptcha.text; // Update CAPTCHA text
 });
 
 app.get('/get-points', function (req, res) {
