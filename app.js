@@ -287,6 +287,7 @@ app.post('/sql_query', function (req, res) {
 
   // Vulnerable SQL query with single quotes around the userInput
   const query = `SELECT bookname, description FROM books WHERE bookname = '${sqlQuery}'`;
+  console.log(query);
 
   try {
     const rows = database.prepare(query).all(); // Execute the SQL query
