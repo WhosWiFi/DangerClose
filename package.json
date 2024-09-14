@@ -13,6 +13,7 @@
     "cookie-parser": "^1.4.6",
     "express": "^4.19.2",
     "express-session": "^1.18.0",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "svg-captcha": "^1.4.0"
   }
 }

@@ -3,6 +3,7 @@ var app = express();
 var fs = require('fs');
 var bodyParser = require('body-parser');
 var session = require('express-session');
+const svgCaptcha = require('svg-captcha');
 var cookieParser = require('cookie-parser');
 const Database = require('better-sqlite3');
 const database = new Database(':memory:');
@@ -21,6 +22,82 @@ app.use(session({
   resave: false,
   saveUninitialized: true
 }));
+
+
+// Store the current CAPTCHA code and SVG data
+let currentCaptcha = null;
+let captchaSvg = null;
+
+// Middleware to generate CAPTCHA
+function generateCaptcha(req, res, next) {
+  const captcha = svgCaptcha.create({
+    size: 4,
+    ignoreChars: '0oIl',
+    color: true,
+    background: '#eee'
+  });
+
+  currentCaptcha = captcha.text;
+  captchaSvg = captcha.data; // Save CAPTCHA SVG data
+  res.cookie('captcha', currentCaptcha); // Store CAPTCHA value in a cookie
+
+  // Fetch all book titles for the dropdown
+  const stmt = database.prepare('SELECT bookname FROM books');
+  const books = stmt.all();
+
+  // Send the HTML with the book dropdown and CAPTCHA
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Book Lookup</title>
+    </head>
+    <body>
+      <div class="header">
+        <h1>Welcome to SocialMedia</h1>
+      </div>
+      <div class="search-bar">
+        <h1>Book Lookup</h1>
+        <form action="/sql_query_intermediate" method="post">
+          <label for="bookname">Select Book:</label>
+          <select name="bookname" id="bookname">
+            ${books.map(book => `<option value="${book.bookname}">${book.bookname}</option>`).join('')}
+          </select>
+          <br>
+          <label for="captcha">Enter CAPTCHA:</label>
+          <img src="/captcha" alt="CAPTCHA">
+          <input type="text" id="captcha" name="captcha" required>
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+      <div class="result" id="resultBox">
+        <h2>Search Results:</h2>
+        <p id="resultText"></p>
+      </div>
+    </body>
+    </html>
+  `);
+}
+
+// Route to serve CAPTCHA image
+app.get('/captcha', (req, res) => {
+  res.setHeader('Content-Type', 'image/svg+xml');
+  res.send(captchaSvg);
+});
+
+// Middleware to verify CAPTCHA
+function verifyCaptcha(req, res, next) {
+  const userCaptcha = req.body.captcha;
+  const correctCaptcha = req.cookies.captcha;
+
+  if (userCaptcha === correctCaptcha) {
+    next(); // CAPTCHA is correct, proceed to the next middleware
+  } else {
+    res.status(400).send('Incorrect CAPTCHA. Please try again.');
+  }
+}
 
 // Database setup
 database.exec(`
@@ -320,6 +397,58 @@ app.post('/sql_query', function (req, res) {
         </head>
         <body>
           <h1>No results found for "${sqlQuery}"</h1>
+        </body>
+        </html>
+      `);
+    }
+  } catch (err) {
+    res.status(500).send('SQL query error: ' + err.message); // Handle SQL errors
+  }
+});
+
+
+
+app.get('/book_lookup_intermediate', generateCaptcha);
+
+
+app.post('/sql_query_intermediate', verifyCaptcha, function (req, res) {
+  const { bookname } = req.body; // Get the book title selected from the dropdown
+
+  // Vulnerable SQL query with single quotes around the userInput
+  const query = `SELECT bookname, description FROM books WHERE bookname = '${bookname}'`;
+  console.log(query);
+
+  try {
+    const rows = database.prepare(query).all(); // Execute the SQL query
+    if (rows.length > 0) {
+      // Return book details in HTML response
+      res.send(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Book Search Result</title>
+        </head>
+        <body>
+          <h1>Search Results</h1>
+          <ul>
+            ${rows.map(row => `<li>${row.bookname}: ${row.description}</li>`).join('')}
+          </ul>
+        </body>
+        </html>
+      `);
+    } else {
+      res.send(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>No Results Found</title>
+        </head>
+        <body>
+          <h1>No results found for "${bookname}"</h1>
         </body>
         </html>
       `);
