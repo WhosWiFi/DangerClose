@@ -115,9 +115,11 @@ insert_advanced_Book.run('The Giver', 'A world living without color.', '7/10');
 
 
 const userPoints = {points: 0};
-var flagChecks = {"xss_starter_check": false, "xss_intermediate_check": false, "xss_advanced_check": false, "fuzzing_check": false, "sqlite3_starter_check": false, "sqlite3_intermediate_check": false, "sqlite3_advanced_check": false, "broken_auth_starter_check": false, "broken_auth_intermediate_check": false, "broken_auth_advanced_check": false};
+var flagChecks = {"xss_starter_check": false, "xss_intermediate_check": false, "xss_advanced_check": false, "fuzzing_check": false, "sqlite3_starter_check": false, "sqlite3_intermediate_check": false, "sqlite3_advanced_check": false, "broken_auth_starter_check": false, "broken_auth_intermediate_check": false, "broken_auth_advanced_check": false,
+  "directory_traversal_starter_check": false, "directory_traversal_intermediate_check": false, "directory_traversal_advanced_check": false
+};
 var flags = {"xss_starter_flag": "WiFi{X5S_s3Ssi0n_l34k}", "xss_intermediate_flag": "WiFi{X5S_Bl4CK_L13T}", "xss_advanced_flag": "WiFi{X5S_CSP_W1Z4Rd}", "fuzzing_flag": "WiFi{y0U_kN0w_fuZZ1Ng!}", "sqlite3_starter_flag": "WiFi{sQL_m4sT3r}", 
-  "sqlite3_intermediate_flag": "WiFi{C4PTCH4_TH3_FL4G}", "sqlite3_advanced_flag": "WiFi{B34T_TH3_ENC0D1NG}", "broken_auth_starter_flag": "WiFi{R0L3_B4S3D_ADM1N}", "broken_auth_intermediate_flag": "WiFi{R0L3_ID0R_D1SCL0SUR3}", "broken_auth_advanced_flag": "WiFi{T00_M4NY_US3RS}"};
+  "sqlite3_intermediate_flag": "WiFi{C4PTCH4_TH3_FL4G}", "sqlite3_advanced_flag": "WiFi{B34T_TH3_ENC0D1NG}", "broken_auth_starter_flag": "WiFi{R0L3_B4S3D_ADM1N}", "broken_auth_intermediate_flag": "WiFi{R0L3_ID0R_D1SCL0SUR3}", "broken_auth_advanced_flag": "WiFi{T00_M4NY_US3RS}", "directory_traversal_starter_flag": "WiFi{F0LD3R_EXPL0R3R}", "directory_traversal_intermediate_flag": "WiFi{R0L3_}", "directory_traversal_advanced_flag": "WiFi{R0L3_DIR_TRAVEL_L0L}"};
 
 app.get('/', function (req, res) {
   fs.readFile('html/home.html', function (err, data) {
@@ -548,7 +550,6 @@ app.post('/sql_query_advanced', (req, res) => {
   }
 
   const query = `SELECT bookname, description FROM books WHERE bookname = '${decodedInput}'`;
-  console.log('SQL Query:', query);
 
   try {
     const rows = advanced_database.prepare(query).all();
@@ -780,10 +781,10 @@ app.post('/admin_intermediate', (req, res) => {
 });
 
 
-// Dummy data for 100 user details
+// Dummy data for 999 user details
 const userRoles = {};
-for (let i = 1; i <= 100; i++) {
-  if (i === 74) {
+for (let i = 1; i <= 999; i++) {
+  if (i === 467) {
     userRoles[i] = { username: `admin`, role: 'hidden_admin_access' };
   } else {
     userRoles[i] = { username: `user`, role: 'customer' };
@@ -820,7 +821,7 @@ app.get('/broken_access_advanced', (req, res) => {
 
       <script>
         // Function to fetch account details automatically
-        fetch('/account_details_advanced?userId=13')
+        fetch('/account_details_advanced?userId=999')
           .then(response => response.json())
           .then(data => {
             document.getElementById('accountDetails').innerHTML = 
@@ -868,6 +869,7 @@ app.post('/admin_advanced', (req, res) => {
     res.status(403).send("<h1>User's role does not have access to this page.</h1>");
   }
 });
+
 
 app.get('/logout', function (req, res) {
   req.session.destroy(function(err) {
@@ -956,6 +958,21 @@ app.post('/validate_flag', function (req, res) {
   }
   if (flag == 'WiFi{T00_M4NY_US3RS}' && !(flagChecks.broken_auth_advanced_check)) {
     flagChecks.broken_auth_advanced_check = true;
+    userPoints.points += 50;
+    return res.redirect('/get-points');
+  }
+  if (flag == 'WiFi{F0LD3R_EXPL0R3R}' && !(flagChecks.directory_traversal_starter_check)) {
+    flagChecks.directory_traversal_starter_check = true;
+    userPoints.points += 10;
+    return res.redirect('/get-points');
+  }
+  if (flag == 'WiFi{UNKNOWN}' && !(flagChecks.directory_traversal_intermediate_check)) {
+    flagChecks.directory_traversal_intermediate_check = true;
+    userPoints.points += 30;
+    return res.redirect('/get-points');
+  }
+  if (flag == 'WiFi{UNKNOWN}' && !(flagChecks.directory_traversal_advanced_check)) {
+    flagChecks.directory_traversal_advanced_check = true;
     userPoints.points += 50;
     return res.redirect('/get-points');
   }
