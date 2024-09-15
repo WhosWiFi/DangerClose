@@ -848,7 +848,7 @@ app.post('/admin_advanced', (req, res) => {
 
 app.get('/my_account_jwt_starter', (req, res) => {
   // Create JWT with role "user"
-  const token = jwt.sign({ role: 'user' }, 'secretKey', { algorithm: 'none' });
+  const token = jwt.sign({ role: 'user' }, 'secretKey', { algorithm: 'HS256' });
 
   // Set JWT as a cookie in the response
   res.cookie('jwt_token', token, { httpOnly: false });
