@@ -531,7 +531,7 @@ app.get('/book_lookup_advanced', function (req, res) {
         <h1>Book Lookup</h1>
         <form action="/sql_query_advanced" method="post">
           <select name="sqlQuery">
-            ${books.map(book => `<option value="${book.bookname}">${book.bookname}</option>`).join('')}
+            ${books.map(book => `<option value="${Buffer.from(book.bookname).toString('base64')}">${book.bookname}</option>`).join('')}
           </select>
           <button type="submit">Submit</button>
         </form>
