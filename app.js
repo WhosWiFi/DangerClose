@@ -5,6 +5,7 @@ var bodyParser = require('body-parser');
 var session = require('express-session');
 const svgCaptcha = require('svg-captcha');
 var cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
 const Database = require('better-sqlite3');
 const database = new Database(':memory:');
 const intermediate_database = new Database(':memory:');
@@ -843,6 +844,47 @@ app.post('/admin_advanced', (req, res) => {
   }
 });
 
+
+
+app.get('/my_account_jwt_starter', (req, res) => {
+  // Create JWT with role "user"
+  const token = jwt.sign({ role: 'user' }, 'secretKey', { algorithm: 'none' });
+
+  // Set JWT as a cookie in the response
+  res.cookie('jwt_token', token, { httpOnly: false });
+
+  res.send(`
+    <h1>My Account</h1>
+    <p>Your current role is <strong>user</strong>.</p>
+    <p>A JWT has been sent as a cookie named <code>jwt_token</code> in this response.</p>
+    <p>To pass the lab, intercept the HTTP request, modify the JWT to change your role to "admin" and access the admin page.</p>
+    <form action="/admin_jwt_starter" method="GET">
+      <button type="submit">Attempt to Access Admin Page</button>
+    </form>
+  `);
+});
+
+app.get('/admin_jwt_starter', (req, res) => {
+  // Only get the 'jwt_token' cookie from the request
+  const token = req.cookies.jwt_token;
+
+  if (!token) {
+    return res.status(401).send('<h1>No JWT Token Found</h1><p>You must provide a valid token in the request.</p>');
+  }
+
+  try {
+    // Decode the JWT without verifying the signature
+    const decoded = jwt.decode(token);
+
+    if (decoded.role === 'admin') {
+      res.send('<h1>Welcome Admin</h1><p>Here is the flag: FLAG-12345</p>');
+    } else {
+      res.send('<h1>Access Denied</h1><p>You are not an admin.</p>');
+    }
+  } catch (err) {
+    res.status(400).send('<h1>Invalid Token</h1><p>The token is invalid or malformed.</p>');
+  }
+});
 
 app.get('/logout', function (req, res) {
   req.session.destroy(function(err) {
