@@ -120,7 +120,7 @@ var flagChecks = {"xss_starter_check": false, "xss_intermediate_check": false, "
   "directory_traversal_starter_check": false, "directory_traversal_intermediate_check": false, "directory_traversal_advanced_check": false, "jwt_starter_check": false, "jwt_intermediate_check": false, "jwt_advanced_check": false, "directory_traversal_starter_check": false, "directory_traversal_intermediate_check": false, "directory_traversal_advanced_check": false
 };
 var flags = {"xss_starter_flag": "WiFi{X5S_s3Ssi0n_l34k}", "xss_intermediate_flag": "WiFi{X5S_Bl4CK_L13T}", "xss_advanced_flag": "WiFi{X5S_CSP_W1Z4Rd}", "fuzzing_flag": "WiFi{y0U_kN0w_fuZZ1Ng!}", "sqlite3_starter_flag": "WiFi{sQL_m4sT3r}", 
-  "sqlite3_intermediate_flag": "WiFi{C4PTCH4_TH3_FL4G}", "sqlite3_advanced_flag": "WiFi{B34T_TH3_ENC0D1NG}", "broken_auth_starter_flag": "WiFi{R0L3_B4S3D_ADM1N}", "broken_auth_intermediate_flag": "WiFi{R0L3_ID0R_D1SCL0SUR3}", "broken_auth_advanced_flag": "WiFi{T00_M4NY_US3RS}", "directory_traversal_starter_flag": "WiFi{F0LD3R_EXPL0R3R}", "directory_traversal_intermediate_flag": "WiFi{R0L3_}", "directory_traversal_advanced_flag": "WiFi{R0L3_DIR_TRAVEL_L0L}", "jwt_starter_flag": "WiFi{JWT_N0_S1GN4TUR3}", "jwt_intermediate_flag": "WiFi{JWT_1S_}", "jwt_advanced_flag": "WiFi{JWT_1S_S3CRET}"};
+  "sqlite3_intermediate_flag": "WiFi{C4PTCH4_TH3_FL4G}", "sqlite3_advanced_flag": "WiFi{B34T_TH3_ENC0D1NG}", "broken_auth_starter_flag": "WiFi{R0L3_B4S3D_ADM1N}", "broken_auth_intermediate_flag": "WiFi{R0L3_ID0R_D1SCL0SUR3}", "broken_auth_advanced_flag": "WiFi{T00_M4NY_US3RS}", "directory_traversal_starter_flag": "WiFi{F0LD3R_EXPL0R3R}", "directory_traversal_intermediate_flag": "WiFi{R0L3_}", "directory_traversal_advanced_flag": "WiFi{R0L3_DIR_TRAVEL_L0L}", "jwt_starter_flag": "WiFi{JWT_N0_S1GN4TUR3}", "jwt_intermediate_flag": "WiFi{JWT_S1GN4TUR3_1N_PL4IN_S1GHT}", "jwt_advanced_flag": "WiFi{JWT_1S_S3CRET}"};
 
 app.get('/', function (req, res) {
   fs.readFile('html/home.html', function (err, data) {
@@ -857,7 +857,7 @@ app.get('/my_account_jwt_starter', (req, res) => {
     <h1>My Account</h1>
     <p>Your current role is <strong>user</strong>.</p>
     <p>A JWT has been sent as a cookie named <code>jwt_token</code> in this response.</p>
-    <p>To pass the lab, intercept the HTTP request, modify the JWT to change your role to "admin" and access the admin page.</p>
+    <p>To pass the lab, modify the JWT to access the admin page.</p>
     <form action="/admin_jwt_starter" method="GET">
       <button type="submit">Attempt to Access Admin Page</button>
     </form>
@@ -894,6 +894,58 @@ app.get('/admin_jwt_starter', (req, res) => {
     res.status(400).send('<h1>Invalid Token</h1><p>The token is invalid or malformed.</p>');
   }
 });
+
+app.get('/my_account_jwt_intermediate', (req, res) => {
+  // Create JWT with role "user"
+  const token = jwt.sign({ role: 'user' }, 'secretKey-2465', { algorithm: 'HS256' });
+
+  // Set JWT as a cookie in the response
+  res.cookie('jwt_token', token, { httpOnly: false });
+
+  res.send(`
+    <h1>My Account</h1>
+    <p>Your current role is <strong>user</strong>.</p>
+    <p>A JWT has been sent as a cookie named <code>jwt_token</code> in this response.</p>
+    <p>The secret key used to sign the token is: 'secretKey-2465'</p>
+    <p>To pass the lab, intercept the HTTP request, modify the JWT to change your role to "admin", and re-sign it with the secret key to access the admin page.</p>
+    <form action="/admin_jwt_intermediate" method="GET">
+      <button type="submit">Attempt to Access Admin Page</button>
+    </form>
+  `);
+});
+
+// Route to check for admin access
+app.get('/admin_jwt_intermediate', (req, res) => {
+  // Only get the 'jwt_token' cookie from the request
+  const token = req.cookies.jwt_token;
+
+  if (!token) {
+    return res.status(401).send('<h1>No JWT Token Found</h1><p>You must provide a valid token in the request.</p>');
+  }
+
+  try {
+    // Verify the JWT signature
+    const decoded = jwt.verify(token, 'secretKey-2465', { algorithms: ['HS256'] });
+
+    if (decoded.role === 'admin') {
+      // User has admin access
+      fs.readFile('html/jwt_intermediate_admin_page.html', (err, data) => {
+        if (err) {
+          res.status(500).send('Error loading admin page');
+        } else {
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.write(data);
+            res.end();
+          }
+      });
+    } else {
+      res.send('<h1>Access Denied</h1><p>You are not an admin.</p>');
+    }
+  } catch (err) {
+    res.status(400).send('<h1>Invalid Token</h1><p>The token is invalid, malformed, or not signed correctly.</p>');
+  }
+});
+
 
 app.get('/logout', function (req, res) {
   req.session.destroy(function(err) {
@@ -990,7 +1042,7 @@ app.post('/validate_flag', function (req, res) {
     userPoints.points += 10;
     return res.redirect('/get-points');
   }
-  if (flag == 'WiFi{UNKNOWN}' && !(flagChecks.jwt_intermediate_check)) {
+  if (flag == 'WiFi{JWT_S1GN4TUR3_1N_PL4IN_S1GHT}' && !(flagChecks.jwt_intermediate_check)) {
     flagChecks.jwt_intermediate_check = true;
     userPoints.points += 30;
     return res.redirect('/get-points');
