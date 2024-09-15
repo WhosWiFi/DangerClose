@@ -5,8 +5,6 @@ var bodyParser = require('body-parser');
 var session = require('express-session');
 const svgCaptcha = require('svg-captcha');
 var cookieParser = require('cookie-parser');
-const zlib = require('zlib');
-const base64 = require('base-64');
 const Database = require('better-sqlite3');
 const database = new Database(':memory:');
 const intermediate_database = new Database(':memory:');
@@ -510,29 +508,33 @@ app.post('/sql_query_intermediate', function (req, res) {
 });
 
 
-// Helper function to encode the input (Gzip → Base64 → URL-encode)
+// Helper function to encode the input (Base64 → URL-encode)
 function encodeInput(input) {
   try {
-      const gzipbed = zlib.gzipSync(input);
-      const base64bed = Buffer.from(gzipbed).toString('base64');
-      const urlEncoded = encodeURIComponent(base64bed);
-      return urlEncoded;
+    // Base64 encode
+    const base64bed = Buffer.from(input).toString('base64');
+    
+    // URL encode
+    const urlEncoded = encodeURIComponent(base64bed);
+    return urlEncoded;
   } catch (error) {
-      console.error("Encoding error:", error);
-      return null;
+    console.error("Encoding error:", error);
+    return null;
   }
 }
 
-// Helper function to decode the input (URL-decode → Base64 → Gzip)
+// Helper function to decode the input (URL-decode → Base64 decode)
 function decodeInput(encodedInput) {
   try {
-      const urlDecoded = decodeURIComponent(encodedInput);
-      const base64Decoded = Buffer.from(urlDecoded, 'base64');
-      const gunzipped = zlib.gunzipSync(base64Decoded).toString('utf8');
-      return gunzipped;
+    // URL decode
+    const urlDecoded = decodeURIComponent(encodedInput);
+    
+    // Base64 decode
+    const base64Decoded = Buffer.from(urlDecoded, 'base64').toString('utf8');
+    return base64Decoded;
   } catch (error) {
-      console.error("Decoding error:", error);
-      return null;
+    console.error("Decoding error:", error);
+    return null;
   }
 }
 
@@ -542,59 +544,62 @@ app.post('/sql_query_advanced', (req, res) => {
 
   const decodedInput = decodeInput(userInput);
   if (!decodedInput) {
-      return res.status(400).send('Invalid input format. Please make sure your input is properly encoded.');
+    return res.status(400).send('Invalid input format. Please make sure your input is properly encoded.');
   }
 
   const query = `SELECT bookname, description FROM books WHERE bookname = '${decodedInput}'`;
   console.log('SQL Query:', query);
 
   try {
-      const rows = advanced_database.prepare(query).all();
-      let responseHtml;
+    const rows = advanced_database.prepare(query).all();
+    let responseHtml;
 
-      if (rows.length > 0) {
-          const encodedBooknames = rows.map(row => {
-              const gzipbed = zlib.gzipSync(row.bookname);
-              const base64bed = Buffer.from(gzipbed).toString('base64');
-              const urlEncoded = encodeURIComponent(base64bed);
-              return `<li>${row.bookname}: ${row.description} (Encoded: ${urlEncoded})</li>`;
-          }).join('');
+    if (rows.length > 0) {
+      const encodedBooknames = rows.map(row => {
+        // URL encode the bookname first
+        const urlEncoded = encodeURIComponent(row.bookname);
+        
+        // Then Base64 encode the URL encoded string
+        const base64payload = Buffer.from(urlEncoded).toString('base64');
+        
+        return `<li>${row.bookname}: ${row.description} (Encoded: ${base64payload})</li>`;
+      }).join('');
 
-          responseHtml = `
-              <!DOCTYPE html>
-              <html lang="en">
-              <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Book Search Result</title>
-              </head>
-              <body>
-                <h1>Search Results</h1>
-                <ul>
-                  ${encodedBooknames}
-                </ul>
-              </body>
-              </html>
-          `;
-      } else {
-          responseHtml = `
-              <!DOCTYPE html>
-              <html lang="en">
-              <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>No Results Found</title>
-              </head>
-              <body>
-                <h1>No results found for "${decodedInput}"</h1>
-              </body>
-              </html>
-          `;
-      }
-      
-      res.send(responseHtml);
+      responseHtml = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Book Search Result</title>
+        </head>
+        <body>
+          <h1>Search Results</h1>
+          <ul>
+            ${encodedBooknames}
+          </ul>
+        </body>
+        </html>
+      `;
+    } else {
+      responseHtml = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>No Results Found</title>
+        </head>
+        <body>
+          <h1>No results found for "${decodedInput}"</h1>
+        </body>
+        </html>
+      `;
+    }
+    
+    res.send(responseHtml);
   } catch (err) {
-      res.status(500).send('SQL query error: ' + err.message);
+    res.status(500).send('SQL query error: ' + err.message);
   }
 });
 
@@ -603,25 +608,25 @@ app.get('/book_lookup_advanced', (req, res) => {
   const books = advanced_database.prepare('SELECT bookname FROM books').all();
 
   res.send(`
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Advanced SQL Lab</title>
-      </head>
-      <body>
-        <h1>Advanced SQL Injection Lab</h1>
-        <p>Select a book and submit to see the encoded results:</p>
-        <form action="/sql_query_advanced" method="post">
-          <label for="userInput">Book Name:</label>
-          <select name="userInput" id="userInput" required>
-            ${books.map(book => `<option value="${encodeInput(book.bookname)}">${book.bookname}</option>`).join('')}
-          </select>
-          <button type="submit">Submit</button>
-        </form>
-      </body>
-      </html>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Advanced SQL Lab</title>
+    </head>
+    <body>
+      <h1>Advanced SQL Injection Lab</h1>
+      <p>Select a book and submit to see the encoded results:</p>
+      <form action="/sql_query_advanced" method="post">
+        <label for="userInput">Book Name:</label>
+        <select name="userInput" id="userInput" required>
+          ${books.map(book => `<option value="${encodeInput(book.bookname)}">${book.bookname}</option>`).join('')}
+        </select>
+        <button type="submit">Submit</button>
+      </form>
+    </body>
+    </html>
   `);
 });
 
