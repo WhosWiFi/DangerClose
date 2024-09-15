@@ -5,9 +5,12 @@ var bodyParser = require('body-parser');
 var session = require('express-session');
 const svgCaptcha = require('svg-captcha');
 var cookieParser = require('cookie-parser');
+const zlib = require('zlib');
+const base64 = require('base-64');
 const Database = require('better-sqlite3');
 const database = new Database(':memory:');
 const intermediate_database = new Database(':memory:');
+const advanced_database = new Database(':memory:');
 
 const secret_nonce_key = 'secret-nonce-key';
 const advanced_flag = 'WiFi{X5S_CSP_W1Z4Rd}';
@@ -28,7 +31,7 @@ app.use(session({
 // Store the current CAPTCHA code and SVG data
 let currentCaptcha = '';
 
-// Database setup
+// Starter Database setup
 database.exec(`
   CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -55,7 +58,7 @@ insertBook.run('Harry Potter', 'You are a wizard Harry!');
 insertBook.run('Dune', 'The start of science fiction.');
 insertBook.run('The Giver', 'A world living without color.');
 
-// Database setup
+// Intermediate Database setup
 intermediate_database.exec(`
   CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -81,6 +84,36 @@ const insert_intermediate_Book = intermediate_database.prepare('INSERT INTO book
 insert_intermediate_Book.run('Harry Potter', 'You are a wizard Harry!');
 insert_intermediate_Book.run('Dune', 'The start of science fiction.');
 insert_intermediate_Book.run('The Giver', 'A world living without color.');
+
+
+// Advanced Database setup
+advanced_database.exec(`
+  CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT,
+    password TEXT,
+    email TEXT
+  );
+
+  CREATE TABLE books (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    bookname TEXT,
+    description TEXT,
+    rating TEXT
+  );
+`);
+
+// Insert data into the users table.
+const insert_advanced_User = advanced_database.prepare('INSERT INTO users (username, password, email) VALUES (?, ?, ?)');
+insert_advanced_User.run('admin', 'WiFi{C4PTCH4_TH3_FL4G}', 'admin@dangerclose.com');
+insert_advanced_User.run('wifi', 'Password123!', 'wifi@dangerclose.com');
+insert_advanced_User.run('giorno', 'Welcome1!', 'giorno@dangerclose.com');
+
+// Insert data into the books table.
+const insert_advanced_Book = advanced_database.prepare('INSERT INTO books (bookname, description, rating) VALUES (?, ?, ?)');
+insert_advanced_Book.run('Harry Potter', 'You are a wizard Harry!', '10/10');
+insert_advanced_Book.run('Dune', 'The start of science fiction.', '8/10');
+insert_advanced_Book.run('The Giver', 'A world living without color.', '7/10');
 
 
 const userPoints = {points: 0};
@@ -475,6 +508,124 @@ app.post('/sql_query_intermediate', function (req, res) {
 
   currentCaptcha = newCaptcha.text; // Update CAPTCHA text
 });
+
+
+// Helper function to encode the input (Gzip → Base64 → URL-encode)
+function encodeInput(input) {
+  try {
+      const gzipbed = zlib.gzipSync(input);
+      const base64bed = Buffer.from(gzipbed).toString('base64');
+      const urlEncoded = encodeURIComponent(base64bed);
+      return urlEncoded;
+  } catch (error) {
+      console.error("Encoding error:", error);
+      return null;
+  }
+}
+
+// Helper function to decode the input (URL-decode → Base64 → Gzip)
+function decodeInput(encodedInput) {
+  try {
+      const urlDecoded = decodeURIComponent(encodedInput);
+      const base64Decoded = Buffer.from(urlDecoded, 'base64');
+      const gunzipped = zlib.gunzipSync(base64Decoded).toString('utf8');
+      return gunzipped;
+  } catch (error) {
+      console.error("Decoding error:", error);
+      return null;
+  }
+}
+
+// Endpoint to handle SQL queries with encoded input
+app.post('/sql_query_advanced', (req, res) => {
+  const { userInput } = req.body;
+
+  const decodedInput = decodeInput(userInput);
+  if (!decodedInput) {
+      return res.status(400).send('Invalid input format. Please make sure your input is properly encoded.');
+  }
+
+  const query = `SELECT bookname, description FROM books WHERE bookname = '${decodedInput}'`;
+  console.log('SQL Query:', query);
+
+  try {
+      const rows = advanced_database.prepare(query).all();
+      let responseHtml;
+
+      if (rows.length > 0) {
+          const encodedBooknames = rows.map(row => {
+              const gzipbed = zlib.gzipSync(row.bookname);
+              const base64bed = Buffer.from(gzipbed).toString('base64');
+              const urlEncoded = encodeURIComponent(base64bed);
+              return `<li>${row.bookname}: ${row.description} (Encoded: ${urlEncoded})</li>`;
+          }).join('');
+
+          responseHtml = `
+              <!DOCTYPE html>
+              <html lang="en">
+              <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Book Search Result</title>
+              </head>
+              <body>
+                <h1>Search Results</h1>
+                <ul>
+                  ${encodedBooknames}
+                </ul>
+              </body>
+              </html>
+          `;
+      } else {
+          responseHtml = `
+              <!DOCTYPE html>
+              <html lang="en">
+              <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>No Results Found</title>
+              </head>
+              <body>
+                <h1>No results found for "${decodedInput}"</h1>
+              </body>
+              </html>
+          `;
+      }
+      
+      res.send(responseHtml);
+  } catch (err) {
+      res.status(500).send('SQL query error: ' + err.message);
+  }
+});
+
+// Serve the form to input a plain book name
+app.get('/book_lookup_advanced', (req, res) => {
+  const books = advanced_database.prepare('SELECT bookname FROM books').all();
+
+  res.send(`
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Advanced SQL Lab</title>
+      </head>
+      <body>
+        <h1>Advanced SQL Injection Lab</h1>
+        <p>Select a book and submit to see the encoded results:</p>
+        <form action="/sql_query_advanced" method="post">
+          <label for="userInput">Book Name:</label>
+          <select name="userInput" id="userInput" required>
+            ${books.map(book => `<option value="${encodeInput(book.bookname)}">${book.bookname}</option>`).join('')}
+          </select>
+          <button type="submit">Submit</button>
+        </form>
+      </body>
+      </html>
+  `);
+});
+
+
 
 app.get('/get-points', function (req, res) {
   res.json(userPoints);
