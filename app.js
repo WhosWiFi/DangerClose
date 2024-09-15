@@ -882,7 +882,7 @@ app.get('/common', function (req, res) {
   res.send();
 });
 
-app.get('/common/config.php', function (req, res) {
+app.get('/common/config.js', function (req, res) {
   fs.readFile('misc/secret.txt', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/plain'});
     res.write(data);
