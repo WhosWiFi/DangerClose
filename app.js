@@ -781,17 +781,7 @@ app.post('/admin_intermediate', (req, res) => {
 });
 
 
-// Dummy data for 999 user details
-const userRoles = {};
-for (let i = 1; i <= 999; i++) {
-  if (i === 467) {
-    userRoles[i] = { username: `admin`, role: 'hidden_admin_access' };
-  } else {
-    userRoles[i] = { username: `user`, role: 'customer' };
-  }
-}
-
-// Serve the main page with NASA news and auto-fetch account details for ID 13
+// Serve the main page with NASA news and auto-fetch account details for ID 999
 app.get('/broken_access_advanced', (req, res) => {
   const nasaNewsHtml = `
     <h3>NASA News:</h3>
@@ -820,15 +810,20 @@ app.get('/broken_access_advanced', (req, res) => {
       </form>
 
       <script>
-        // Function to fetch account details automatically
-        fetch('/account_details_advanced?userId=999')
+        // Function to fetch account details for ID 999 automatically via POST
+        fetch('/account_details_advanced', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: 999, role: 'customer' })
+        })
           .then(response => response.json())
           .then(data => {
             document.getElementById('accountDetails').innerHTML = 
               '<p>Username: ' + data.username + '</p><p>Role: ' + data.role + '</p>';
           })
           .catch(error => {
-            console.error('Error fetching account details:', error);
+            document.getElementById('accountDetails').innerHTML = 
+              '<p>Error fetching account details: ' + error.message + '</p>';
           });
       </script>
     </body>
@@ -838,15 +833,32 @@ app.get('/broken_access_advanced', (req, res) => {
   res.send(html);
 });
 
-// Endpoint to return account details based on user ID
-app.get('/account_details_advanced', (req, res) => {
-  const userId = parseInt(req.query.userId, 10);
-
-  if (userRoles[userId]) {
-    res.json(userRoles[userId]);
+// Dummy data for 999 user details
+const userRoles = {};
+for (let i = 1; i <= 999; i++) {
+  if (i === 467) {
+    userRoles[i] = { username: `admin`, role: 'hidden_admin_access' };
   } else {
-    res.status(404).send('User not found');
+    userRoles[i] = { username: `user`, role: 'customer' };
   }
+}
+
+// POST endpoint to return account details based on user ID
+app.post('/account_details_advanced', (req, res) => {
+  const { userId, role } = req.body;
+
+  // Check if the requested user exists
+  if (!userRoles[userId]) {
+    return res.status(404).send('User not found');
+  }
+
+  // Only moderators can view other users' details
+  if (userId !== 999 && role !== 'moderator') {
+    return res.status(403).send("Invalid role to use this feature. Must be 'moderator' to use this functionality.");
+  }
+
+  // Return the requested user's details
+  res.json(userRoles[userId]);
 });
 
 // Endpoint to handle access to the admin page
