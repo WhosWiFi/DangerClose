@@ -7,6 +7,7 @@ const svgCaptcha = require('svg-captcha');
 var cookieParser = require('cookie-parser');
 const Database = require('better-sqlite3');
 const database = new Database(':memory:');
+const intermediate_database = new Database(':memory:');
 
 const secret_nonce_key = 'secret-nonce-key';
 const advanced_flag = 'WiFi{X5S_CSP_W1Z4Rd}';
@@ -54,10 +55,38 @@ insertBook.run('Harry Potter', 'You are a wizard Harry!');
 insertBook.run('Dune', 'The start of science fiction.');
 insertBook.run('The Giver', 'A world living without color.');
 
+// Database setup
+intermediate_database.exec(`
+  CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT,
+    password TEXT
+  );
+
+  CREATE TABLE books (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    bookname TEXT,
+    description TEXT
+  );
+`);
+
+// Insert data into the users table.
+const insert_intermediate_User = intermediate_database.prepare('INSERT INTO users (username, password) VALUES (?, ?)');
+insert_intermediate_User.run('admin', 'WiFi{C4PTCH4_TH3_FL4G}');
+insert_intermediate_User.run('wifi', 'Password123!');
+insert_intermediate_User.run('giorno', 'Welcome1!');
+
+// Insert data into the books table.
+const insert_intermediate_Book = intermediate_database.prepare('INSERT INTO books (bookname, description) VALUES (?, ?)');
+insert_intermediate_Book.run('Harry Potter', 'You are a wizard Harry!');
+insert_intermediate_Book.run('Dune', 'The start of science fiction.');
+insert_intermediate_Book.run('The Giver', 'A world living without color.');
+
 
 const userPoints = {points: 0};
-var flagChecks = {"xss_starter_check": false, "xss_intermediate_check": false, "xss_advanced_check": false, "fuzzing_check": false, "sqlite3_check": false};
-var flags = {"xss_starter_flag": "WiFi{X5S_s3Ssi0n_l34k}", "xss_intermediate_flag": "WiFi{X5S_Bl4CK_L13T}", "xss_advanced_flag": "WiFi{X5S_CSP_W1Z4Rd}", "fuzzing_flag": false, "sqlite3_flag": false}
+var flagChecks = {"xss_starter_check": false, "xss_intermediate_check": false, "xss_advanced_check": false, "fuzzing_check": false, "sqlite3_starter_check": false, "sqlite3_intermediate_check": false, "sqlite3_advanced_check": false};
+var flags = {"xss_starter_flag": "WiFi{X5S_s3Ssi0n_l34k}", "xss_intermediate_flag": "WiFi{X5S_Bl4CK_L13T}", "xss_advanced_flag": "WiFi{X5S_CSP_W1Z4Rd}", "fuzzing_flag": "WiFi{y0U_kN0w_fuZZ1Ng!}", "sqlite3_starter_flag": "WiFi{sQL_m4sT3r}", 
+  "sqlite3_intermediate_flag": "WiFi{C4PTCH4_TH3_FL4G}", "sqlite3_advanced_flag": "WiFi{UNKNOWN}"}
 
 app.get('/', function (req, res) {
   fs.readFile('html/home.html', function (err, data) {
@@ -292,7 +321,6 @@ app.post('/sql_query', function (req, res) {
 
   // Vulnerable SQL query with single quotes around the userInput
   const query = `SELECT bookname, description FROM books WHERE bookname = '${sqlQuery}'`;
-  console.log(query);
 
   try {
     const rows = database.prepare(query).all(); // Execute the SQL query
@@ -339,7 +367,7 @@ app.post('/sql_query', function (req, res) {
 // Serve HTML form with CAPTCHA
 app.get('/book_lookup_intermediate', (req, res) => {
   // Fetch all book titles for the dropdown
-  const books = database.prepare('SELECT bookname FROM books').all();
+  const books = intermediate_database.prepare('SELECT bookname FROM books').all();
 
   // Generate CAPTCHA
   const captcha = svgCaptcha.create({
@@ -393,14 +421,13 @@ app.post('/sql_query_intermediate', function (req, res) {
 
   // Vulnerable SQL query with single quotes around the userInput
   const query = `SELECT bookname, description FROM books WHERE bookname = '${bookname}'`;
-  console.log(query);
   // Validate CAPTCHA
   if (captcha !== currentCaptcha) {
     return res.send('CAPTCHA is incorrect. Please try again.');
   }
 
   try {
-    const rows = database.prepare(query).all(); // Execute the SQL query
+    const rows = intermediate_database.prepare(query).all(); // Execute the SQL query
     if (rows.length > 0) {
       // Return book details in HTML response
       res.send(`
@@ -534,10 +561,20 @@ app.post('/validate_flag', function (req, res) {
     userPoints.points += 50;
     return res.redirect('/get-points');
   }
-  if (flag == 'WiFi{sQL_m4sT3r}') {
-    flagChecks.sqlite3_check = true;
-    req.session.isAdmin = true;
-    return res.redirect('/admin');
+  if (flag == 'WiFi{sQL_m4sT3r}' && !(flagChecks.sqlite3_starter_check)) {
+    flagChecks.sqlite3_starter_check = true;
+    userPoints.points += 10;
+    return res.redirect('/get-points');
+  }
+  if (flag == 'WiFi{C4PTCH4_TH3_FL4G}' && !(flagChecks.sqlite3_intermediate_check)) {
+    flagChecks.sqlite3_intermediate_check = true;
+    userPoints.points += 30;
+    return res.redirect('/get-points');
+  }
+  if (flag == 'WiFi{UNKNOWN}' && !(flagChecks.sqlite3_advanced_check)) {
+    flagChecks.sqlite3_advanced_check = true;
+    userPoints.points += 50;
+    return res.redirect('/get-points');
   }
   else {
       res.writeHead(403, {'Content-Type': 'application/json'})
@@ -555,5 +592,5 @@ app.get('/robots.txt', function (req, res) {
 });
 
 app.listen(3000, function () {
-  console.log('DangerClose listening on port 3000!');
+  console.log('DangerClose is hosted at http://localhost:3000');
 });
