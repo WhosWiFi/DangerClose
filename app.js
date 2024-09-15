@@ -117,10 +117,10 @@ insert_advanced_Book.run('The Giver', 'A world living without color.', '7/10');
 
 const userPoints = {points: 0};
 var flagChecks = {"xss_starter_check": false, "xss_intermediate_check": false, "xss_advanced_check": false, "fuzzing_check": false, "sqlite3_starter_check": false, "sqlite3_intermediate_check": false, "sqlite3_advanced_check": false, "broken_auth_starter_check": false, "broken_auth_intermediate_check": false, "broken_auth_advanced_check": false,
-  "directory_traversal_starter_check": false, "directory_traversal_intermediate_check": false, "directory_traversal_advanced_check": false
+  "directory_traversal_starter_check": false, "directory_traversal_intermediate_check": false, "directory_traversal_advanced_check": false, "jwt_starter_check": false, "jwt_intermediate_check": false, "jwt_advanced_check": false, "directory_traversal_starter_check": false, "directory_traversal_intermediate_check": false, "directory_traversal_advanced_check": false
 };
 var flags = {"xss_starter_flag": "WiFi{X5S_s3Ssi0n_l34k}", "xss_intermediate_flag": "WiFi{X5S_Bl4CK_L13T}", "xss_advanced_flag": "WiFi{X5S_CSP_W1Z4Rd}", "fuzzing_flag": "WiFi{y0U_kN0w_fuZZ1Ng!}", "sqlite3_starter_flag": "WiFi{sQL_m4sT3r}", 
-  "sqlite3_intermediate_flag": "WiFi{C4PTCH4_TH3_FL4G}", "sqlite3_advanced_flag": "WiFi{B34T_TH3_ENC0D1NG}", "broken_auth_starter_flag": "WiFi{R0L3_B4S3D_ADM1N}", "broken_auth_intermediate_flag": "WiFi{R0L3_ID0R_D1SCL0SUR3}", "broken_auth_advanced_flag": "WiFi{T00_M4NY_US3RS}", "directory_traversal_starter_flag": "WiFi{F0LD3R_EXPL0R3R}", "directory_traversal_intermediate_flag": "WiFi{R0L3_}", "directory_traversal_advanced_flag": "WiFi{R0L3_DIR_TRAVEL_L0L}"};
+  "sqlite3_intermediate_flag": "WiFi{C4PTCH4_TH3_FL4G}", "sqlite3_advanced_flag": "WiFi{B34T_TH3_ENC0D1NG}", "broken_auth_starter_flag": "WiFi{R0L3_B4S3D_ADM1N}", "broken_auth_intermediate_flag": "WiFi{R0L3_ID0R_D1SCL0SUR3}", "broken_auth_advanced_flag": "WiFi{T00_M4NY_US3RS}", "directory_traversal_starter_flag": "WiFi{F0LD3R_EXPL0R3R}", "directory_traversal_intermediate_flag": "WiFi{R0L3_}", "directory_traversal_advanced_flag": "WiFi{R0L3_DIR_TRAVEL_L0L}", "jwt_starter_flag": "WiFi{JWT_N0_S1GN4TUR3}", "jwt_intermediate_flag": "WiFi{JWT_1S_}", "jwt_advanced_flag": "WiFi{JWT_1S_S3CRET}"};
 
 app.get('/', function (req, res) {
   fs.readFile('html/home.html', function (err, data) {
@@ -877,7 +877,16 @@ app.get('/admin_jwt_starter', (req, res) => {
     const decoded = jwt.decode(token);
 
     if (decoded.role === 'admin') {
-      res.send('<h1>Welcome Admin</h1><p>Here is the flag: FLAG-12345</p>');
+          // User has admin access
+      fs.readFile('html/jwt_starter_admin_page.html', (err, data) => {
+        if (err) {
+          res.status(500).send('Error loading admin page');
+        } else {
+          res.writeHead(200, { 'Content-Type': 'text/html' });
+          res.write(data);
+          res.end();
+        }
+      });
     } else {
       res.send('<h1>Access Denied</h1><p>You are not an admin.</p>');
     }
@@ -973,6 +982,21 @@ app.post('/validate_flag', function (req, res) {
   }
   if (flag == 'WiFi{T00_M4NY_US3RS}' && !(flagChecks.broken_auth_advanced_check)) {
     flagChecks.broken_auth_advanced_check = true;
+    userPoints.points += 50;
+    return res.redirect('/get-points');
+  }
+  if (flag == 'WiFi{JWT_N0_S1GN4TUR3}' && !(flagChecks.jwt_starter_check)) {
+    flagChecks.jwt_starter_check = true;
+    userPoints.points += 10;
+    return res.redirect('/get-points');
+  }
+  if (flag == 'WiFi{UNKNOWN}' && !(flagChecks.jwt_intermediate_check)) {
+    flagChecks.jwt_intermediate_check = true;
+    userPoints.points += 30;
+    return res.redirect('/get-points');
+  }
+  if (flag == 'WiFi{UNKNOWN}' && !(flagChecks.jwt_advanced_check)) {
+    flagChecks.jwt_advanced_check = true;
     userPoints.points += 50;
     return res.redirect('/get-points');
   }
