@@ -103,7 +103,7 @@ advanced_database.exec(`
 
 // Insert data into the users table.
 const insert_advanced_User = advanced_database.prepare('INSERT INTO users (username, password, email) VALUES (?, ?, ?)');
-insert_advanced_User.run('admin', 'WiFi{C4PTCH4_TH3_FL4G}', 'admin@dangerclose.com');
+insert_advanced_User.run('admin', 'WiFi{B34T_TH3_ENC0D1NG}', 'admin@dangerclose.com');
 insert_advanced_User.run('wifi', 'Password123!', 'wifi@dangerclose.com');
 insert_advanced_User.run('giorno', 'Welcome1!', 'giorno@dangerclose.com');
 
@@ -115,9 +115,9 @@ insert_advanced_Book.run('The Giver', 'A world living without color.', '7/10');
 
 
 const userPoints = {points: 0};
-var flagChecks = {"xss_starter_check": false, "xss_intermediate_check": false, "xss_advanced_check": false, "fuzzing_check": false, "sqlite3_starter_check": false, "sqlite3_intermediate_check": false, "sqlite3_advanced_check": false};
+var flagChecks = {"xss_starter_check": false, "xss_intermediate_check": false, "xss_advanced_check": false, "fuzzing_check": false, "sqlite3_starter_check": false, "sqlite3_intermediate_check": false, "sqlite3_advanced_check": false, "broken_auth_starter_check": false, "broken_auth_intermediate_check": false, "broken_auth_advanced_check": false};
 var flags = {"xss_starter_flag": "WiFi{X5S_s3Ssi0n_l34k}", "xss_intermediate_flag": "WiFi{X5S_Bl4CK_L13T}", "xss_advanced_flag": "WiFi{X5S_CSP_W1Z4Rd}", "fuzzing_flag": "WiFi{y0U_kN0w_fuZZ1Ng!}", "sqlite3_starter_flag": "WiFi{sQL_m4sT3r}", 
-  "sqlite3_intermediate_flag": "WiFi{C4PTCH4_TH3_FL4G}", "sqlite3_advanced_flag": "WiFi{UNKNOWN}"}
+  "sqlite3_intermediate_flag": "WiFi{C4PTCH4_TH3_FL4G}", "sqlite3_advanced_flag": "WiFi{B34T_TH3_ENC0D1NG}", "broken_auth_starter_flag": "WiFi{R0L3_B4S3D_ADM1N}", "broken_auth_intermediate_flag": "WiFi{R0L3_ID0R_D1SCL0SUR3}", "broken_auth_advanced_flag": "WiFi{UNKNOWN}"};
 
 app.get('/', function (req, res) {
   fs.readFile('html/home.html', function (err, data) {
@@ -679,7 +679,7 @@ app.post('/admin_starter', (req, res) => {
   const { role } = req.body;
   if (role === 'admin') {
     // User has admin access
-    fs.readFile('html/admin.html', (err, data) => {
+    fs.readFile('html/admin_starter_page.html', (err, data) => {
       if (err) {
         res.status(500).send('Error loading admin page');
       } else {
@@ -691,6 +691,57 @@ app.post('/admin_starter', (req, res) => {
   } else {
     // User does not have admin access
     res.status(403).send("<h1>User is not 'admin'</h1>");
+  }
+});
+
+app.get('/broken_access_intermediate', (req, res) => {
+  const nasaNewsHtml = `
+    <h3>NASA News:</h3>
+    <ul>
+      <li><strong>Mission to Mars:</strong> NASA is planning a new mission to Mars in the next decade. Exciting times ahead!</li>
+      <li><strong>SpaceX Collaboration:</strong> NASA collaborates with SpaceX for upcoming space launches. Innovations in space travel!</li>
+      <li><strong>James Webb Telescope:</strong> The James Webb Telescope is sending back incredible images of distant galaxies.</li>
+    </ul>
+  `;
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Broken Access Lab</title>
+    </head>
+    <body>
+      <h1>NASA News</h1>
+      ${nasaNewsHtml}
+      <h2>Admin Access</h2>
+      <form action="/admin_intermediate" method="post">
+        <input type="hidden" name="role" value="customer" />
+        <button type="submit">Go to Admin Page</button>
+      </form>
+    </body>
+    </html>
+  `;
+
+  res.send(html);
+});
+
+// Endpoint to handle access to the admin page
+app.post('/admin_intermediate', (req, res) => {
+  const { role } = req.body;
+  if (role === 'system_administrator') {
+    // User has admin access
+    fs.readFile('html/admin_intermediate_page.html', (err, data) => {
+      if (err) {
+        res.status(500).send('Error loading admin page');
+      } else {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.write(data);
+        res.end();
+      }
+    });
+  } else {
+    // User does not have admin access
+    res.status(403).send("<h1>User's role does not have access to this page.</h1>");
   }
 });
 
@@ -764,8 +815,23 @@ app.post('/validate_flag', function (req, res) {
     userPoints.points += 30;
     return res.redirect('/get-points');
   }
-  if (flag == 'WiFi{UNKNOWN}' && !(flagChecks.sqlite3_advanced_check)) {
+  if (flag == 'WiFi{B34T_TH3_ENC0D1NG}' && !(flagChecks.sqlite3_advanced_check)) {
     flagChecks.sqlite3_advanced_check = true;
+    userPoints.points += 50;
+    return res.redirect('/get-points');
+  }
+  if (flag == 'WiFi{R0L3_B4S3D_ADM1N}' && !(flagChecks.broken_auth_starter_check)) {
+    flagChecks.broken_auth_starter_check = true;
+    userPoints.points += 10;
+    return res.redirect('/get-points');
+  }
+  if (flag == 'WiFi{R0L3_ID0R_D1SCL0SUR3}' && !(flagChecks.broken_auth_intermediate_check)) {
+    flagChecks.broken_auth_intermediate_check = true;
+    userPoints.points += 30;
+    return res.redirect('/get-points');
+  }
+  if (flag == 'WiFi{UNKNOWN}' && !(flagChecks.broken_auth_advanced_check)) {
+    flagChecks.broken_auth_advanced_check = true;
     userPoints.points += 50;
     return res.redirect('/get-points');
   }
