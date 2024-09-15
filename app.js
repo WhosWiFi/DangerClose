@@ -117,7 +117,7 @@ insert_advanced_Book.run('The Giver', 'A world living without color.', '7/10');
 const userPoints = {points: 0};
 var flagChecks = {"xss_starter_check": false, "xss_intermediate_check": false, "xss_advanced_check": false, "fuzzing_check": false, "sqlite3_starter_check": false, "sqlite3_intermediate_check": false, "sqlite3_advanced_check": false, "broken_auth_starter_check": false, "broken_auth_intermediate_check": false, "broken_auth_advanced_check": false};
 var flags = {"xss_starter_flag": "WiFi{X5S_s3Ssi0n_l34k}", "xss_intermediate_flag": "WiFi{X5S_Bl4CK_L13T}", "xss_advanced_flag": "WiFi{X5S_CSP_W1Z4Rd}", "fuzzing_flag": "WiFi{y0U_kN0w_fuZZ1Ng!}", "sqlite3_starter_flag": "WiFi{sQL_m4sT3r}", 
-  "sqlite3_intermediate_flag": "WiFi{C4PTCH4_TH3_FL4G}", "sqlite3_advanced_flag": "WiFi{B34T_TH3_ENC0D1NG}", "broken_auth_starter_flag": "WiFi{R0L3_B4S3D_ADM1N}", "broken_auth_intermediate_flag": "WiFi{R0L3_ID0R_D1SCL0SUR3}", "broken_auth_advanced_flag": "WiFi{UNKNOWN}"};
+  "sqlite3_intermediate_flag": "WiFi{C4PTCH4_TH3_FL4G}", "sqlite3_advanced_flag": "WiFi{B34T_TH3_ENC0D1NG}", "broken_auth_starter_flag": "WiFi{R0L3_B4S3D_ADM1N}", "broken_auth_intermediate_flag": "WiFi{R0L3_ID0R_D1SCL0SUR3}", "broken_auth_advanced_flag": "WiFi{T00_M4NY_US3RS}"};
 
 app.get('/', function (req, res) {
   fs.readFile('html/home.html', function (err, data) {
@@ -779,6 +779,96 @@ app.post('/admin_intermediate', (req, res) => {
   }
 });
 
+
+// Dummy data for 100 user details
+const userRoles = {};
+for (let i = 1; i <= 100; i++) {
+  if (i === 74) {
+    userRoles[i] = { username: `admin`, role: 'hidden_admin_access' };
+  } else {
+    userRoles[i] = { username: `user`, role: 'customer' };
+  }
+}
+
+// Serve the main page with NASA news and auto-fetch account details for ID 13
+app.get('/broken_access_advanced', (req, res) => {
+  const nasaNewsHtml = `
+    <h3>NASA News:</h3>
+    <ul>
+      <li><strong>Mission to Mars:</strong> NASA is planning a new mission to Mars in the next decade. Exciting times ahead!</li>
+      <li><strong>SpaceX Collaboration:</strong> NASA collaborates with SpaceX for upcoming space launches. Innovations in space travel!</li>
+      <li><strong>James Webb Telescope:</strong> The James Webb Telescope is sending back incredible images of distant galaxies.</li>
+    </ul>
+  `;
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Broken Access Lab</title>
+    </head>
+    <body>
+      <h1>NASA News</h1>
+      ${nasaNewsHtml}
+      <h2>Account Details</h2>
+      <div id="accountDetails"></div>
+      <h2>Admin Access</h2>
+      <form action="/admin_advanced" method="post">
+        <input type="hidden" name="role" value="customer" />
+        <button type="submit">Go to Admin Page</button>
+      </form>
+
+      <script>
+        // Function to fetch account details automatically
+        fetch('/account_details_advanced?userId=13')
+          .then(response => response.json())
+          .then(data => {
+            document.getElementById('accountDetails').innerHTML = 
+              '<p>Username: ' + data.username + '</p><p>Role: ' + data.role + '</p>';
+          })
+          .catch(error => {
+            console.error('Error fetching account details:', error);
+          });
+      </script>
+    </body>
+    </html>
+  `;
+
+  res.send(html);
+});
+
+// Endpoint to return account details based on user ID
+app.get('/account_details_advanced', (req, res) => {
+  const userId = parseInt(req.query.userId, 10);
+
+  if (userRoles[userId]) {
+    res.json(userRoles[userId]);
+  } else {
+    res.status(404).send('User not found');
+  }
+});
+
+// Endpoint to handle access to the admin page
+app.post('/admin_advanced', (req, res) => {
+  const { role } = req.body;
+
+  if (role === 'hidden_admin_access') {
+    // User has admin access
+    fs.readFile('html/admin_advanced_page.html', (err, data) => {
+      if (err) {
+        res.status(500).send('Error loading admin page');
+      } else {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.write(data);
+        res.end();
+      }
+    });
+  } else {
+    // User does not have admin access
+    res.status(403).send("<h1>User's role does not have access to this page.</h1>");
+  }
+});
+
 app.get('/logout', function (req, res) {
   req.session.destroy(function(err) {
       if (err) {
@@ -864,7 +954,7 @@ app.post('/validate_flag', function (req, res) {
     userPoints.points += 30;
     return res.redirect('/get-points');
   }
-  if (flag == 'WiFi{UNKNOWN}' && !(flagChecks.broken_auth_advanced_check)) {
+  if (flag == 'WiFi{T00_M4NY_US3RS}' && !(flagChecks.broken_auth_advanced_check)) {
     flagChecks.broken_auth_advanced_check = true;
     userPoints.points += 50;
     return res.redirect('/get-points');
