@@ -694,6 +694,13 @@ app.post('/admin_starter', (req, res) => {
   }
 });
 
+// Dummy data for user details
+const userDetails = {
+  1: { username: 'admin', role: 'system_super_administrator' },
+  2: { username: 'user', role: 'customer' }
+};
+
+// Serve the main page with NASA news and auto-fetch account details for ID 2
 app.get('/broken_access_intermediate', (req, res) => {
   const nasaNewsHtml = `
     <h3>NASA News:</h3>
@@ -713,11 +720,26 @@ app.get('/broken_access_intermediate', (req, res) => {
     <body>
       <h1>NASA News</h1>
       ${nasaNewsHtml}
+      <h2>Account Details</h2>
+      <div id="accountDetails"></div>
       <h2>Admin Access</h2>
       <form action="/admin_intermediate" method="post">
         <input type="hidden" name="role" value="customer" />
         <button type="submit">Go to Admin Page</button>
       </form>
+
+      <script>
+        // Function to fetch account details automatically
+        fetch('/account_details?userId=2')
+          .then(response => response.json())
+          .then(data => {
+            document.getElementById('accountDetails').innerHTML = 
+              '<p>Username: ' + data.username + '</p><p>Role: ' + data.role + '</p>';
+          })
+          .catch(error => {
+            console.error('Error fetching account details:', error);
+          });
+      </script>
     </body>
     </html>
   `;
@@ -725,10 +747,22 @@ app.get('/broken_access_intermediate', (req, res) => {
   res.send(html);
 });
 
+// Endpoint to return account details based on user ID
+app.get('/account_details', (req, res) => {
+  const userId = parseInt(req.query.userId, 10);
+
+  if (userDetails[userId]) {
+    res.json(userDetails[userId]);
+  } else {
+    res.status(404).send('User not found');
+  }
+});
+
 // Endpoint to handle access to the admin page
 app.post('/admin_intermediate', (req, res) => {
   const { role } = req.body;
-  if (role === 'system_administrator') {
+
+  if (role === 'system_super_administrator') {
     // User has admin access
     fs.readFile('html/admin_intermediate_page.html', (err, data) => {
       if (err) {
