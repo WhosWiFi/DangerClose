@@ -643,17 +643,54 @@ app.get('/hacker', function (req, res) {
   return res.send(data['Hacker']);
 });
 
-app.get('/admin', function (req, res) {
-  if (req.session.isAdmin) {
+app.get('/broken_access_starter', (req, res) => {
+  const nasaNewsHtml = `
+    <h3>NASA News:</h3>
+    <ul>
+      <li><strong>Mission to Mars:</strong> NASA is planning a new mission to Mars in the next decade. Exciting times ahead!</li>
+      <li><strong>SpaceX Collaboration:</strong> NASA collaborates with SpaceX for upcoming space launches. Innovations in space travel!</li>
+      <li><strong>James Webb Telescope:</strong> The James Webb Telescope is sending back incredible images of distant galaxies.</li>
+    </ul>
+  `;
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Broken Access Lab</title>
+    </head>
+    <body>
+      <h1>NASA News</h1>
+      ${nasaNewsHtml}
+      <h2>Admin Access</h2>
+      <form action="/admin_starter" method="post">
+        <input type="hidden" name="role" value="customer" />
+        <button type="submit">Go to Admin Page</button>
+      </form>
+    </body>
+    </html>
+  `;
+
+  res.send(html);
+});
+
+// Endpoint to handle access to the admin page
+app.post('/admin_starter', (req, res) => {
+  const { role } = req.body;
+  if (role === 'admin') {
     // User has admin access
-    fs.readFile('html/admin.html', function (err, data) {
-      res.writeHead(200, {'Content-Type': 'text/html'});
-      res.write(data);
-      return res.end();
+    fs.readFile('html/admin.html', (err, data) => {
+      if (err) {
+        res.status(500).send('Error loading admin page');
+      } else {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.write(data);
+        res.end();
+      }
     });
   } else {
-      // User does not have admin access
-      res.status(403).send('<h1>Access Denied</h1>');
+    // User does not have admin access
+    res.status(403).send("<h1>User is not 'admin'</h1>");
   }
 });
 
