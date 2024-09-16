@@ -1012,6 +1012,77 @@ app.post('/admin_jwt_advanced', (req, res) => {
 });
 
 
+let user_starter = {
+  username: 'customer1',
+  balance: 1000 // Starting balance
+};
+
+const products_starter = [
+  { id: 1, name: 'Laptop', price: 2280 },
+  { id: 2, name: 'Smartphone', price: 1200 },
+  { id: 3, name: 'Headphones', price: 240 }
+];
+
+app.get('/business_starter', (req, res) => {
+  let productHTML = products_starter.map(product => `
+    <div>
+      <h3>${product.name}</h3>
+      <p>Price: $${product.price}</p>
+      <form method="POST" action="/buy">
+        <input type="hidden" name="productId" value="${product.id}">
+        <input type="hidden" name="price" value="${product.price}">
+        <button type="submit">Buy Now</button>
+      </form>
+    </div>
+  `).join('');
+
+  res.send(`
+    <html>
+      <head><title>Tech Shop</title></head>
+      <body>
+        <h1>Welcome to the Tech Shop</h1>
+        <p>Your balance: $${user_starter.balance}</p>
+        ${productHTML}
+      </body>
+    </html>
+  `);
+});
+
+// Vulnerable purchase route
+app.post('/buy', (req, res) => {
+  const { productId, price } = req.body;
+
+  const product = products_starter.find(p => p.id == productId);
+  if (!product) {
+    return res.status(400).send('Product not found.');
+  }
+
+  const parsedPrice = parseFloat(price);
+  
+  if (parsedPrice > user_starter.balance) {
+    return res.status(400).send('Insufficient balance.');
+  }
+
+  // Deduct price (flaw: does not validate if the price is negative)
+  user_starter.balance -= parsedPrice;
+  
+  // Check if balance manipulation occurred to give the flag
+  if (user_starter.balance > 1500) {
+    return res.send(`
+      <h1>Congratulations!</h1>
+      <p>Flag: BUSINESS_LOGIC_VULN_FLAG</p>
+      <p>New balance: $${user_starter.balance}</p>
+    `);
+  }
+
+  res.send(`
+    <h1>Purchase Successful</h1>
+    <p>You bought ${product.name} for $${price}!</p>
+    <p>Your new balance is $${user_starter.balance}</p>
+    <a href="/">Go back to shop</a>
+  `);
+});
+
 
 app.get('/logout', function (req, res) {
   req.session.destroy(function(err) {
