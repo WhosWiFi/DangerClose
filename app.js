@@ -955,18 +955,24 @@ app.get('/my_account_jwt_advanced', (req, res) => {
   // Create JWT with role "user" using RS256
   const token = jwt.sign({ role: 'user' }, privateKey, { algorithm: 'RS256' });
 
+  // Set JWT as a cookie in the response
   res.cookie('jwt_token', token, { httpOnly: false });
+
   res.send(`
     <h1>My Account</h1>
     <p>Your current role is <strong>user</strong>.</p>
-    <p>A JWT signed using RS256 has been sent as a cookie named <code>jwt_token</code>.</p>
-    <p>To pass the lab, perform a JWT Algorithm Confusion attack.</p>
-    <pre>${publicKey}</pre>
+    <p>A JWT signed using RS256 has been sent as a cookie named <code>jwt_token</code> in this response.</p>
+    <p>The public key used to verify the JWT is: <pre>${publicKey}</pre></p>
+    <p>To pass the lab, perform a JWT Algorithm Confusion attack to access the admin page.</p>
+    <form action="/admin_jwt_advanced" method="GET">
+      <button type="submit">Attempt to Access Admin Page</button>
+    </form>
   `);
 });
 
 // Route to check for admin access
 app.get('/admin_jwt_advanced', (req, res) => {
+  // Only get the 'jwt_token' cookie from the request
   const token = req.cookies.jwt_token;
 
   if (!token) {
@@ -992,7 +998,7 @@ app.get('/admin_jwt_advanced', (req, res) => {
       res.send('<h1>Access Denied</h1><p>You are not an admin.</p>');
     }
   } catch (err) {
-    res.status(400).send('<h1>Invalid Token</h1><p>The token is invalid or malformed.</p>');
+    res.status(400).send('<h1>Invalid Token</h1><p>The token is invalid, malformed, or not signed correctly.</p>');
   }
 });
 
