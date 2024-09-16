@@ -121,10 +121,11 @@ insert_advanced_Book.run('The Giver', 'A world living without color.', '7/10');
 
 const userPoints = {points: 0};
 var flagChecks = {"xss_starter_check": false, "xss_intermediate_check": false, "xss_advanced_check": false, "fuzzing_check": false, "sqlite3_starter_check": false, "sqlite3_intermediate_check": false, "sqlite3_advanced_check": false, "broken_auth_starter_check": false, "broken_auth_intermediate_check": false, "broken_auth_advanced_check": false,
-  "directory_traversal_starter_check": false, "directory_traversal_intermediate_check": false, "directory_traversal_advanced_check": false, "jwt_starter_check": false, "jwt_intermediate_check": false, "jwt_advanced_check": false, "directory_traversal_starter_check": false, "directory_traversal_intermediate_check": false, "directory_traversal_advanced_check": false
+  "directory_traversal_starter_check": false, "directory_traversal_intermediate_check": false, "directory_traversal_advanced_check": false, "jwt_starter_check": false, "jwt_intermediate_check": false, "jwt_advanced_check": false, "directory_traversal_starter_check": false, "directory_traversal_intermediate_check": false, "directory_traversal_advanced_check": false,
+  "business_starter_check": false, "business_intermediate_check": false, "business_advanced_check": false
 };
 var flags = {"xss_starter_flag": "WiFi{X5S_s3Ssi0n_l34k}", "xss_intermediate_flag": "WiFi{X5S_Bl4CK_L13T}", "xss_advanced_flag": "WiFi{X5S_CSP_W1Z4Rd}", "fuzzing_flag": "WiFi{y0U_kN0w_fuZZ1Ng!}", "sqlite3_starter_flag": "WiFi{sQL_m4sT3r}", 
-  "sqlite3_intermediate_flag": "WiFi{C4PTCH4_TH3_FL4G}", "sqlite3_advanced_flag": "WiFi{B34T_TH3_ENC0D1NG}", "broken_auth_starter_flag": "WiFi{R0L3_B4S3D_ADM1N}", "broken_auth_intermediate_flag": "WiFi{R0L3_ID0R_D1SCL0SUR3}", "broken_auth_advanced_flag": "WiFi{T00_M4NY_US3RS}", "directory_traversal_starter_flag": "WiFi{F0LD3R_EXPL0R3R}", "directory_traversal_intermediate_flag": "WiFi{R0L3_}", "directory_traversal_advanced_flag": "WiFi{R0L3_DIR_TRAVEL_L0L}", "jwt_starter_flag": "WiFi{JWT_N0_S1GN4TUR3}", "jwt_intermediate_flag": "WiFi{JWT_S1GN4TUR3_1N_PL4IN_S1GHT}", "jwt_advanced_flag": "WiFi{JWT_S1GN4TUR3_C0NFUS10N}"};
+  "sqlite3_intermediate_flag": "WiFi{C4PTCH4_TH3_FL4G}", "sqlite3_advanced_flag": "WiFi{B34T_TH3_ENC0D1NG}", "broken_auth_starter_flag": "WiFi{R0L3_B4S3D_ADM1N}", "broken_auth_intermediate_flag": "WiFi{R0L3_ID0R_D1SCL0SUR3}", "broken_auth_advanced_flag": "WiFi{T00_M4NY_US3RS}", "directory_traversal_starter_flag": "WiFi{F0LD3R_EXPL0R3R}", "directory_traversal_intermediate_flag": "WiFi{R0L3_}", "directory_traversal_advanced_flag": "WiFi{R0L3_DIR_TRAVEL_L0L}", "jwt_starter_flag": "WiFi{JWT_N0_S1GN4TUR3}", "jwt_intermediate_flag": "WiFi{JWT_S1GN4TUR3_1N_PL4IN_S1GHT}", "jwt_advanced_flag": "WiFi{JWT_S1GN4TUR3_C0NFUS10N}", "business_starter_flag": "WiFi{F1R3_S4L3}", "business_intermediate_flag": "WiFi{UNKNOWN}", "business_advanced_flag": "WiFi{UNKNOWN}"};
 
 app.get('/', function (req, res) {
   fs.readFile('html/home.html', function (err, data) {
@@ -1012,23 +1013,24 @@ app.post('/admin_jwt_advanced', (req, res) => {
 });
 
 
+// Simulated user and product data
 let user_starter = {
-  username: 'customer1',
-  balance: 1000 // Starting balance
+  balance: 1000, // Starting balance
 };
 
 const products_starter = [
-  { id: 1, name: 'Laptop', price: 2280 },
-  { id: 2, name: 'Smartphone', price: 1200 },
-  { id: 3, name: 'Headphones', price: 240 }
+  { id: 1, name: 'Laptop', price: 1500 },
+  { id: 2, name: 'Smartphone', price: 700 },
+  { id: 3, name: 'Headphones', price: 200 },
 ];
 
+// Display the shop
 app.get('/business_starter', (req, res) => {
   let productHTML = products_starter.map(product => `
     <div>
       <h3>${product.name}</h3>
       <p>Price: $${product.price}</p>
-      <form method="POST" action="/buy">
+      <form method="POST" action="/buy_starter">
         <input type="hidden" name="productId" value="${product.id}">
         <input type="hidden" name="price" value="${product.price}">
         <button type="submit">Buy Now</button>
@@ -1049,37 +1051,42 @@ app.get('/business_starter', (req, res) => {
 });
 
 // Vulnerable purchase route
-app.post('/buy', (req, res) => {
+app.post('/buy_starter', (req, res) => {
   const { productId, price } = req.body;
 
+  // Find the product by ID
   const product = products_starter.find(p => p.id == productId);
   if (!product) {
     return res.status(400).send('Product not found.');
   }
 
+  // Parse the price from the form
   const parsedPrice = parseFloat(price);
   
+  // Check if the price is greater than user's balance (but the price could be manipulated!)
   if (parsedPrice > user_starter.balance) {
     return res.status(400).send('Insufficient balance.');
   }
 
-  // Deduct price (flaw: does not validate if the price is negative)
+  // Deduct the price (flaw: does not validate if the price is negative)
   user_starter.balance -= parsedPrice;
-  
-  // Check if balance manipulation occurred to give the flag
-  if (user_starter.balance > 1500) {
+
+  // Check if the user bought the Laptop (product with id 1)
+  if (product.id === 1) {  // Laptop has id = 1
     return res.send(`
       <h1>Congratulations!</h1>
-      <p>Flag: BUSINESS_LOGIC_VULN_FLAG</p>
+      <p>Flag: WiFi{F1R3_S4L3}</p>
+      <p>You successfully bought a Laptop!</p>
       <p>New balance: $${user_starter.balance}</p>
     `);
   }
 
+  // Purchase confirmation message for other products
   res.send(`
     <h1>Purchase Successful</h1>
-    <p>You bought ${product.name} for $${price}!</p>
+    <p>You bought ${product.name} for $${parsedPrice}!</p>
     <p>Your new balance is $${user_starter.balance}</p>
-    <a href="/">Go back to shop</a>
+    <a href="/business_starter">Go back to shop</a>
   `);
 });
 
@@ -1189,18 +1196,18 @@ app.post('/validate_flag', function (req, res) {
     userPoints.points += 50;
     return res.redirect('/get-points');
   }
-  if (flag == 'WiFi{F0LD3R_EXPL0R3R}' && !(flagChecks.directory_traversal_starter_check)) {
-    flagChecks.directory_traversal_starter_check = true;
+  if (flag == 'WiFi{F1R3_S4L3}' && !(flagChecks.business_starter_check)) {
+    flagChecks.business_starter_check = true;
     userPoints.points += 10;
     return res.redirect('/get-points');
   }
-  if (flag == 'WiFi{UNKNOWN}' && !(flagChecks.directory_traversal_intermediate_check)) {
-    flagChecks.directory_traversal_intermediate_check = true;
+  if (flag == 'WiFi{UNKNOWN}' && !(flagChecks.business_intermediate_check)) {
+    flagChecks.business_intermediate_check = true;
     userPoints.points += 30;
     return res.redirect('/get-points');
   }
-  if (flag == 'WiFi{UNKNOWN}' && !(flagChecks.directory_traversal_advanced_check)) {
-    flagChecks.directory_traversal_advanced_check = true;
+  if (flag == 'WiFi{UNKNOWN}' && !(flagChecks.business_advanced_check)) {
+    flagChecks.business_advanced_check = true;
     userPoints.points += 50;
     return res.redirect('/get-points');
   }
