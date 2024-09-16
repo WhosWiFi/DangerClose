@@ -911,7 +911,6 @@ app.get('/my_account_jwt_intermediate', (req, res) => {
     <p>Your current role is <strong>user</strong>.</p>
     <p>A JWT has been sent as a cookie named <code>jwt_token</code> in this response.</p>
     <p>The secret key used to sign the token is: 'secretKey-2465'</p>
-    <p>To pass the lab, intercept the HTTP request, modify the JWT to change your role to "admin", and re-sign it with the secret key to access the admin page.</p>
     <form action="/admin_jwt_intermediate" method="GET">
       <button type="submit">Attempt to Access Admin Page</button>
     </form>
