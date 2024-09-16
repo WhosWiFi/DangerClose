@@ -950,54 +950,64 @@ app.get('/admin_jwt_intermediate', (req, res) => {
 });
 
 
-app.get('/my_account_jwt_advanced', (req, res) => {
-  // Create JWT with role "user" using RS256
-  const token = jwt.sign({ role: 'user' }, privateKey, { algorithm: 'RS256' });
+app.get('/jwt_advanced_lab', (req, res) => {
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>JWT Algorithm Confusion Lab</title>
+    </head>
+    <body>
+      <h1>JWT Lab</h1>
+      <p>Your role is currently: user</p>
+      <button onclick="attemptAdminAccess()">Attempt to Access Admin Page</button>
+      <script>
+        // Function to simulate admin access attempt
+        function attemptAdminAccess() {
+          fetch('/admin_jwt_advanced', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          .then(response => response.text())
+          .then(result => {
+            document.body.innerHTML += '<p>' + result + '</p>';
+          });
+        }
+      </script>
+    </body>
+    </html>
+  `;
 
-  // Set JWT as a cookie in the response
-  res.cookie('jwt_token', token, { httpOnly: false });
+  // Set JWT token in the cookie if it doesn't exist
+  if (!req.cookies.jwt_token) {
+    const token = jwt.sign({ role: 'user' }, 'secretKey', { algorithm: 'HS256' });
+    res.cookie('jwt_token', token, { httpOnly: true });
+  }
 
-  res.send(`
-    <h1>My Account</h1>
-    <p>Your current role is <strong>user</strong>.</p>
-    <p>A JWT signed using RS256 has been sent as a cookie named <code>jwt_token</code> in this response.</p>
-    <p>The public key used to verify the JWT is: <pre>${publicKey}</pre></p>
-    <p>To pass the lab, perform a JWT Algorithm Confusion attack to access the admin page.</p>
-    <form action="/admin_jwt_advanced" method="GET">
-      <button type="submit">Attempt to Access Admin Page</button>
-    </form>
-  `);
+  res.send(html);
 });
 
-// Route to check for admin access
-app.get('/admin_jwt_advanced', (req, res) => {
-  // Only get the 'jwt_token' cookie from the request
+// Endpoint to handle admin page access attempt
+app.post('/admin_jwt_advanced', (req, res) => {
   const token = req.cookies.jwt_token;
 
   if (!token) {
-    return res.status(401).send('<h1>No JWT Token Found</h1><p>You must provide a valid token in the request.</p>');
+    return res.status(403).send('No token provided.');
   }
 
   try {
-    // Misconfigured verification accepts both RS256 and HS256 algorithms
-    const decoded = jwt.verify(token, publicKey, { algorithms: ['RS256', 'HS256'] });
+    // Verify the token, vulnerable to algorithm confusion (allowing 'none')
+    const decoded = jwt.verify(token, 'secretKey', { algorithms: ['HS256', 'none'] });
 
     if (decoded.role === 'admin') {
-      // User has admin access
-      fs.readFile('html/jwt_advanced_admin_page.html', (err, data) => {
-        if (err) {
-          res.status(500).send('Error loading admin page');
-        } else {
-            res.writeHead(200, { 'Content-Type': 'text/html' });
-            res.write(data);
-            res.end();
-          }
-      });
+      res.send('Welcome to the admin page!');
     } else {
-      res.send('<h1>Access Denied</h1><p>You are not an admin.</p>');
+      res.status(403).send('Access Denied: You are not an admin.');
     }
   } catch (err) {
-    res.status(400).send('<h1>Invalid Token</h1><p>The token is invalid, malformed, or not signed correctly.</p>');
+    res.status(403).send('Invalid token or access denied.');
   }
 });
 
