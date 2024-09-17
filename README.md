@@ -2,7 +2,7 @@
 
 ## DESCRIPTION
 
-DangerClose is a vulnerable web application designed in a CTF format. The application has different challenges built in and out of plain sight. The goal is to accumlate as many points as you can during your session. Points can be earned capturing flags scattered throughout the site. Flags have the format of WiFi{}.
+DangerClose is a vulnerable web application designed in a CTF format. The goal is to accumlate as many points as you can during your session. Points can be earned capturing flags scattered throughout the site. Flags have the format of WiFi{}.
 
 ## INSTALLATION
 
