@@ -1097,9 +1097,10 @@ app.get('/business_advanced', (req, res) => {
     <html>
       <head><title>Email Parsing Lab</title></head>
       <body>
-        <h1>Advanced Sign Up</h1>
+        <h1>Internal User Registration</h1>
         <p>Your email is: user@wifi.com</p>
-        <p>Your email must contain the domain "dangerclose.com" to pass validation.</p>
+        <p>Your email must contain the domain: dangerclose.com</p>
+        <p>Example email address: customer@dangerclose.com</p>
         <p>Hint: RFC 5322 addr-spec display-name</p>
         <form method="POST" action="/register_advanced">
           <label>Email: <input type="text" name="email" required></label>
