@@ -25,7 +25,7 @@ app.use(cookieParser());
 
 // Session middleware setup
 app.use(session({
-  secret: 'Password123!', // Replace with a strong secret
+  secret: 'Password123!',
   resave: false,
   saveUninitialized: true
 }));
@@ -161,42 +161,33 @@ app.post('/xssCheck', (req, res) => {
   }
 });
 
-// Handle xss starter flag retrieval
 app.post('/xss-starter-12456-sTwsC', (req, res) => {
   const { success } = req.body;
 
   if (success === true) {
-      // Provide the flag if the success condition is true
       res.send(flags.xss_starter_flag);
   } else {
-      // Send 403 Unauthorized if the request is anything else
       res.status(403).send('Unauthorized');
   }
 });
 
 
-// Handle xss starter flag retrieval
 app.post('/xss-intermediate-8432876653-dIwsPetgF', (req, res) => {
   const { success } = req.body;
 
   if (success === true) {
-      // Provide the flag if the success condition is true
       res.send(flags.xss_intermediate_flag);
   } else {
-      // Send 403 Unauthorized if the request is anything else
       res.status(403).send('Unauthorized');
   }
 });
 
-// Handle xss starter flag retrieval
 app.post('/xss-advanced-2398460-wPqzzLSieXj', (req, res) => {
   const { success } = req.body;
 
   if (success === true) {
-      // Provide the flag if the success condition is true
       res.send(flags.xss_advanced_flag);
   } else {
-      // Send 403 Unauthorized if the request is anything else
       res.status(403).send('Unauthorized');
   }
 });
@@ -321,10 +312,8 @@ app.post('/cspCheck', (req, res) => {
 
 
 app.get('/book_lookup', function (req, res) {
-  // Fetch all book titles for the dropdown
   const books = database.prepare('SELECT bookname FROM books').all();
 
-  // Send the HTML with the book dropdown
   res.send(`
     <!DOCTYPE html>
     <html lang="en">
@@ -356,15 +345,13 @@ app.get('/book_lookup', function (req, res) {
 });
 
 app.post('/sql_query', function (req, res) {
-  const { sqlQuery } = req.body; // Get the book title selected from the dropdown
+  const { sqlQuery } = req.body;
 
-  // Vulnerable SQL query with single quotes around the userInput
   const query = `SELECT bookname, description FROM books WHERE bookname = '${sqlQuery}'`;
 
   try {
     const rows = database.prepare(query).all(); // Execute the SQL query
     if (rows.length > 0) {
-      // Return book details in HTML response
       res.send(`
         <!DOCTYPE html>
         <html lang="en">
@@ -405,7 +392,6 @@ app.post('/sql_query', function (req, res) {
 
 // Serve HTML form with CAPTCHA
 app.get('/book_lookup_intermediate', (req, res) => {
-  // Fetch all book titles for the dropdown
   const books = intermediate_database.prepare('SELECT bookname FROM books').all();
 
   // Generate CAPTCHA
@@ -419,7 +405,6 @@ app.get('/book_lookup_intermediate', (req, res) => {
   currentCaptcha = captcha.text; // Save CAPTCHA text
   const captchaSvg = captcha.data; // Save CAPTCHA SVG data
 
-  // Send the HTML with the book dropdown and CAPTCHA
   res.send(`
     <!DOCTYPE html>
     <html lang="en">
@@ -456,11 +441,9 @@ app.get('/book_lookup_intermediate', (req, res) => {
 
 
 app.post('/sql_query_intermediate', function (req, res) {
-  const { captcha, bookname } = req.body; // Get the book title selected from the dropdown
+  const { captcha, bookname } = req.body;
 
-  // Vulnerable SQL query with single quotes around the userInput
   const query = `SELECT bookname, description FROM books WHERE bookname = '${bookname}'`;
-  // Validate CAPTCHA
   if (captcha !== currentCaptcha) {
     return res.send('CAPTCHA is incorrect. Please try again.');
   }
@@ -468,7 +451,6 @@ app.post('/sql_query_intermediate', function (req, res) {
   try {
     const rows = intermediate_database.prepare(query).all(); // Execute the SQL query
     if (rows.length > 0) {
-      // Return book details in HTML response
       res.send(`
         <!DOCTYPE html>
         <html lang="en">
@@ -517,10 +499,8 @@ app.post('/sql_query_intermediate', function (req, res) {
 
 
 app.get('/book_lookup_advanced', function (req, res) {
-  // Fetch all book titles for the dropdown
   const books = advanced_database.prepare('SELECT bookname FROM books').all();
 
-  // Send the HTML with the book dropdown
   res.send(`
     <!DOCTYPE html>
     <html lang="en">
@@ -552,17 +532,15 @@ app.get('/book_lookup_advanced', function (req, res) {
 });
 
 app.post('/sql_query_advanced', function (req, res) {
-  const { sqlQuery } = req.body; // Get the book title selected from the dropdown
+  const { sqlQuery } = req.body;
 
   const decodedInput = Buffer.from(sqlQuery, 'base64').toString('utf8');
 
-  // Vulnerable SQL query with single quotes around the userInput
   const query = `SELECT bookname, description FROM books WHERE bookname = '${decodedInput}'`;
 
   try {
     const rows = advanced_database.prepare(query).all(); // Execute the SQL query
     if (rows.length > 0) {
-      // Return book details in HTML response
       res.send(`
         <!DOCTYPE html>
         <html lang="en">
@@ -642,7 +620,6 @@ app.get('/broken_access_starter', (req, res) => {
   res.send(html);
 });
 
-// Endpoint to handle access to the admin page
 app.post('/admin_starter', (req, res) => {
   const { role } = req.body;
   if (role === 'admin') {
@@ -662,13 +639,11 @@ app.post('/admin_starter', (req, res) => {
   }
 });
 
-// Dummy data for user details
 const userDetails = {
   1: { username: 'admin', role: 'system_super_administrator' },
   2: { username: 'user', role: 'customer' }
 };
 
-// Serve the main page with NASA news and auto-fetch account details for ID 2
 app.get('/broken_access_intermediate', (req, res) => {
   const nasaNewsHtml = `
     <h3>NASA News:</h3>
@@ -715,7 +690,6 @@ app.get('/broken_access_intermediate', (req, res) => {
   res.send(html);
 });
 
-// Endpoint to return account details based on user ID
 app.get('/account_details', (req, res) => {
   const userId = parseInt(req.query.userId, 10);
 
@@ -726,7 +700,6 @@ app.get('/account_details', (req, res) => {
   }
 });
 
-// Endpoint to handle access to the admin page
 app.post('/admin_intermediate', (req, res) => {
   const { role } = req.body;
 
@@ -748,7 +721,6 @@ app.post('/admin_intermediate', (req, res) => {
 });
 
 
-// Serve the main page with NASA news and auto-fetch account details for ID 999
 app.get('/broken_access_advanced', (req, res) => {
   const nasaNewsHtml = `
     <h3>NASA News:</h3>
@@ -800,7 +772,6 @@ app.get('/broken_access_advanced', (req, res) => {
   res.send(html);
 });
 
-// Dummy data for 999 user details
 const userRoles = {};
 for (let i = 1; i <= 999; i++) {
   if (i === 467) {
@@ -810,25 +781,20 @@ for (let i = 1; i <= 999; i++) {
   }
 }
 
-// POST endpoint to return account details based on user ID
 app.post('/account_details_advanced', (req, res) => {
   const { userId, role } = req.body;
 
-  // Check if the requested user exists
   if (!userRoles[userId]) {
     return res.status(404).send('User not found');
   }
 
-  // Only moderators can view other users' details
   if (userId !== 999 && role !== 'moderator') {
     return res.status(403).send("Invalid role to use this feature. Must be 'moderator' to use this functionality.");
   }
 
-  // Return the requested user's details
   res.json(userRoles[userId]);
 });
 
-// Endpoint to handle access to the admin page
 app.post('/admin_advanced', (req, res) => {
   const { role } = req.body;
 
@@ -852,10 +818,8 @@ app.post('/admin_advanced', (req, res) => {
 
 
 app.get('/my_account_jwt_starter', (req, res) => {
-  // Create JWT with role "user"
   const token = jwt.sign({ role: 'user' }, 'secretKey', { algorithm: 'HS256' });
 
-  // Set JWT as a cookie in the response
   res.cookie('jwt_token', token, { httpOnly: false });
 
   res.send(`
@@ -870,7 +834,6 @@ app.get('/my_account_jwt_starter', (req, res) => {
 });
 
 app.get('/admin_jwt_starter', (req, res) => {
-  // Only get the 'jwt_token' cookie from the request
   const token = req.cookies.jwt_token;
 
   if (!token) {
@@ -878,7 +841,6 @@ app.get('/admin_jwt_starter', (req, res) => {
   }
 
   try {
-    // Decode the JWT without verifying the signature
     const decoded = jwt.decode(token);
 
     if (decoded.role === 'admin') {
@@ -901,10 +863,8 @@ app.get('/admin_jwt_starter', (req, res) => {
 });
 
 app.get('/my_account_jwt_intermediate', (req, res) => {
-  // Create JWT with role "user"
   const token = jwt.sign({ role: 'user' }, 'secretKey-2465', { algorithm: 'HS256' });
 
-  // Set JWT as a cookie in the response
   res.cookie('jwt_token', token, { httpOnly: false });
 
   res.send(`
@@ -918,9 +878,7 @@ app.get('/my_account_jwt_intermediate', (req, res) => {
   `);
 });
 
-// Route to check for admin access
 app.get('/admin_jwt_intermediate', (req, res) => {
-  // Only get the 'jwt_token' cookie from the request
   const token = req.cookies.jwt_token;
 
   if (!token) {
@@ -928,7 +886,6 @@ app.get('/admin_jwt_intermediate', (req, res) => {
   }
 
   try {
-    // Verify the JWT signature
     const decoded = jwt.verify(token, 'secretKey-2465', { algorithms: ['HS256'] });
 
     if (decoded.role === 'admin') {
@@ -951,69 +908,45 @@ app.get('/admin_jwt_intermediate', (req, res) => {
 });
 
 
-app.get('/jwt_advanced_lab', (req, res) => {
-  const html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>JWT Algorithm Confusion Lab</title>
-    </head>
-    <body>
-      <h1>JWT Lab</h1>
-      <p>Your role is currently: user</p>
-      <button onclick="attemptAdminAccess()">Attempt to Access Admin Page</button>
-      <script>
-        // Function to simulate admin access attempt
-        function attemptAdminAccess() {
-          fetch('/admin_jwt_advanced', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          })
-          .then(response => response.text())
-          .then(result => {
-            document.body.innerHTML += '<p>' + result + '</p>';
-          });
-        }
-      </script>
-    </body>
-    </html>
-  `;
+app.get('/my_account_jwt_advanced', (req, res) => {
+  const token = jwt.sign({ role: 'user' }, privateKey, { algorithm: 'RS256' });
 
-  // Set JWT token in the cookie if it doesn't exist
-  if (!req.cookies.jwt_token) {
-    const token = jwt.sign({ role: 'user' }, 'secretKey', { algorithm: 'HS256' });
-    res.cookie('jwt_token', token, { httpOnly: true });
-  }
+  res.cookie('jwt_token', token, { httpOnly: false });
 
-  res.send(html);
+  res.send(`
+    <h1>My Account</h1>
+    <p>Your current role is <strong>user</strong>.</p>
+    <p>A JWT has been sent as a cookie named <code>jwt_token</code>.</p>
+    <form action="/admin_jwt_advanced" method="GET">
+      <button type="submit">Attempt to Access Admin Page</button>
+    </form>
+  `);
 });
 
-// Endpoint to handle admin page access attempt
-app.post('/admin_jwt_advanced', (req, res) => {
+app.get('/admin_jwt_advanced', (req, res) => {
   const token = req.cookies.jwt_token;
 
   if (!token) {
-    return res.status(403).send('No token provided.');
+    return res.status(401).send('<h1>No JWT Token Found</h1><p>You must provide a valid token in the request.</p>');
   }
 
   try {
-    // Verify the token, vulnerable to algorithm confusion (allowing 'none')
-    const decoded = jwt.verify(token, 'secretKey', { algorithms: ['HS256', 'none'] });
+    const decoded = jwt.verify(token, publicKey, { algorithms: ['RS256', 'HS256'], secret: secretKey });
 
     if (decoded.role === 'admin') {
-      res.send('Welcome to the admin page!');
+      res.send(`
+        <h1>Admin Page</h1>
+        <p>Flag: JWT_ADVANCED_BYPASS_FLAG</p>
+      `);
     } else {
-      res.status(403).send('Access Denied: You are not an admin.');
+      res.send('<h1>Access Denied</h1><p>You are not an admin.</p>');
     }
   } catch (err) {
-    res.status(403).send('Invalid token or access denied.');
+    res.status(400).send('<h1>Invalid Token</h1><p>The token is invalid, malformed, or not signed correctly.</p>');
   }
 });
 
 
-// Simulated user and product data
 let user_starter = {
   balance: 1000, // Starting balance
 };
@@ -1050,28 +983,22 @@ app.get('/business_starter', (req, res) => {
   `);
 });
 
-// Vulnerable purchase route
 app.post('/buy_starter', (req, res) => {
   const { productId, price } = req.body;
 
-  // Find the product by ID
   const product = products_starter.find(p => p.id == productId);
   if (!product) {
     return res.status(400).send('Product not found.');
   }
 
-  // Parse the price from the form
   const parsedPrice = parseFloat(price);
   
-  // Check if the price is greater than user's balance (but the price could be manipulated!)
   if (parsedPrice > user_starter.balance) {
     return res.status(400).send('Insufficient balance.');
   }
 
-  // Deduct the price (flaw: does not validate if the price is negative)
   user_starter.balance -= parsedPrice;
 
-  // Check if the user bought the Laptop (product with id 1)
   if (product.id === 1) {  // Laptop has id = 1
     return res.send(`
       <h1>Congratulations!</h1>
@@ -1081,7 +1008,6 @@ app.post('/buy_starter', (req, res) => {
     `);
   }
 
-  // Purchase confirmation message for other products
   res.send(`
     <h1>Purchase Successful</h1>
     <p>You bought ${product.name} for $${parsedPrice}!</p>
