@@ -6,6 +6,7 @@ var session = require('express-session');
 const svgCaptcha = require('svg-captcha');
 var cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
 const Database = require('better-sqlite3');
 const database = new Database(':memory:');
 const intermediate_database = new Database(':memory:');
@@ -125,7 +126,7 @@ var flagChecks = {"xss_starter_check": false, "xss_intermediate_check": false, "
   "business_starter_check": false, "business_intermediate_check": false, "business_advanced_check": false
 };
 var flags = {"xss_starter_flag": "WiFi{X5S_s3Ssi0n_l34k}", "xss_intermediate_flag": "WiFi{X5S_Bl4CK_L13T}", "xss_advanced_flag": "WiFi{X5S_CSP_W1Z4Rd}", "fuzzing_flag": "WiFi{y0U_kN0w_fuZZ1Ng!}", "sqlite3_starter_flag": "WiFi{sQL_m4sT3r}", 
-  "sqlite3_intermediate_flag": "WiFi{C4PTCH4_TH3_FL4G}", "sqlite3_advanced_flag": "WiFi{B34T_TH3_ENC0D1NG}", "broken_auth_starter_flag": "WiFi{R0L3_B4S3D_ADM1N}", "broken_auth_intermediate_flag": "WiFi{R0L3_ID0R_D1SCL0SUR3}", "broken_auth_advanced_flag": "WiFi{T00_M4NY_US3RS}", "directory_traversal_starter_flag": "WiFi{F0LD3R_EXPL0R3R}", "directory_traversal_intermediate_flag": "WiFi{R0L3_}", "directory_traversal_advanced_flag": "WiFi{R0L3_DIR_TRAVEL_L0L}", "jwt_starter_flag": "WiFi{JWT_N0_S1GN4TUR3}", "jwt_intermediate_flag": "WiFi{JWT_S1GN4TUR3_1N_PL4IN_S1GHT}", "jwt_advanced_flag": "WiFi{JWT_S1GN4TUR3_C0NFUS10N}", "business_starter_flag": "WiFi{F1R3_S4L3}", "business_intermediate_flag": "WiFi{UNKNOWN}", "business_advanced_flag": "WiFi{UNKNOWN}"};
+  "sqlite3_intermediate_flag": "WiFi{C4PTCH4_TH3_FL4G}", "sqlite3_advanced_flag": "WiFi{B34T_TH3_ENC0D1NG}", "broken_auth_starter_flag": "WiFi{R0L3_B4S3D_ADM1N}", "broken_auth_intermediate_flag": "WiFi{R0L3_ID0R_D1SCL0SUR3}", "broken_auth_advanced_flag": "WiFi{T00_M4NY_US3RS}", "directory_traversal_starter_flag": "WiFi{F0LD3R_EXPL0R3R}", "directory_traversal_intermediate_flag": "WiFi{R0L3_}", "directory_traversal_advanced_flag": "WiFi{R0L3_DIR_TRAVEL_L0L}", "jwt_starter_flag": "WiFi{JWT_N0_S1GN4TUR3}", "jwt_intermediate_flag": "WiFi{JWT_S1GN4TUR3_1N_PL4IN_S1GHT}", "jwt_advanced_flag": "WiFi{JWT_S1GN4TUR3_C0NFUS10N}", "business_starter_flag": "WiFi{F1R3_S4L3}", "business_intermediate_flag": "WiFi{UNKNOWN}", "business_advanced_flag": "WiFi{EM4IL_P4RSING_C0NFU5I0N}"};
 
 app.get('/', function (req, res) {
   fs.readFile('html/home.html', function (err, data) {
@@ -1091,6 +1092,47 @@ app.post('/buy_starter', (req, res) => {
 });
 
 
+app.get('/business_advanced', (req, res) => {
+  res.send(`
+    <html>
+      <head><title>Email Parsing Lab</title></head>
+      <body>
+        <h1>Advanced Sign Up</h1>
+        <p>Your email is: user@wifi.com</p>
+        <p>Your email must contain the domain "dangerclose.com" to pass validation.</p>
+        <p>Hint: RFC 5322 addr-spec display-name</p>
+        <form method="POST" action="/register_advanced">
+          <label>Email: <input type="text" name="email" required></label>
+          <button type="submit">Sign Up</button>
+        </form>
+      </body>
+    </html>
+  `);
+});
+
+app.post('/register_advanced', (req, res) => {
+  const { email } = req.body;
+
+  if (!email.includes('dangerclose.com')) {
+    return res.status(400).send('Invalid email. You must use an email from dangerclose.com.');
+  }
+
+  const isBypassSuccessful = email
+  
+  if (isBypassSuccessful == 'user@wifi.com(dangerclose.com)') {
+    return res.send(`
+      <h2>Inbox Contains 1 new message.</h2>
+      <h3>Congratulations!</h3>
+      <p>Flag: WiFi{EM4IL_P4RSING_C0NFU5I0N}</p>
+    `);
+  }
+
+  res.send(`
+    <h1>Registration Successful</h1>
+    <p>A confirmation email has been sent to ${email}.</p>
+  `);
+});
+
 app.get('/logout', function (req, res) {
   req.session.destroy(function(err) {
       if (err) {
@@ -1206,7 +1248,7 @@ app.post('/validate_flag', function (req, res) {
     userPoints.points += 30;
     return res.redirect('/get-points');
   }
-  if (flag == 'WiFi{UNKNOWN}' && !(flagChecks.business_advanced_check)) {
+  if (flag == 'WiFi{EM4IL_P4RSING_C0NFU5I0N}' && !(flagChecks.business_advanced_check)) {
     flagChecks.business_advanced_check = true;
     userPoints.points += 50;
     return res.redirect('/get-points');
