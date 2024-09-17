@@ -123,7 +123,7 @@ var flagChecks = {"xss_starter_check": false, "xss_intermediate_check": false, "
   "business_starter_check": false, "business_intermediate_check": false, "business_advanced_check": false
 };
 var flags = {"xss_starter_flag": "WiFi{X5S_s3Ssi0n_l34k}", "xss_intermediate_flag": "WiFi{X5S_Bl4CK_L13T}", "xss_advanced_flag": "WiFi{X5S_CSP_W1Z4Rd}", "fuzzing_flag": "WiFi{y0U_kN0w_fuZZ1Ng!}", "sqlite3_starter_flag": "WiFi{sQL_m4sT3r}", 
-  "sqlite3_intermediate_flag": "WiFi{C4PTCH4_TH3_FL4G}", "sqlite3_advanced_flag": "WiFi{B34T_TH3_ENC0D1NG}", "broken_auth_starter_flag": "WiFi{R0L3_B4S3D_ADM1N}", "broken_auth_intermediate_flag": "WiFi{R0L3_ID0R_D1SCL0SUR3}", "broken_auth_advanced_flag": "WiFi{T00_M4NY_US3RS}", "directory_traversal_starter_flag": "WiFi{F0LD3R_EXPL0R3R}", "directory_traversal_intermediate_flag": "WiFi{R0L3_}", "directory_traversal_advanced_flag": "WiFi{R0L3_DIR_TRAVEL_L0L}", "jwt_starter_flag": "WiFi{JWT_N0_S1GN4TUR3}", "jwt_intermediate_flag": "WiFi{JWT_S1GN4TUR3_1N_PL4IN_S1GHT}", "jwt_advanced_flag": "WiFi{JWT_S1GN4TUR3_C0NFUS10N}", "business_starter_flag": "WiFi{F1R3_S4L3}", "business_intermediate_flag": "WiFi{UNKNOWN}", "business_advanced_flag": "WiFi{EM4IL_P4RSING_C0NFU5I0N}"};
+  "sqlite3_intermediate_flag": "WiFi{C4PTCH4_TH3_FL4G}", "sqlite3_advanced_flag": "WiFi{B34T_TH3_ENC0D1NG}", "broken_auth_starter_flag": "WiFi{R0L3_B4S3D_ADM1N}", "broken_auth_intermediate_flag": "WiFi{R0L3_ID0R_D1SCL0SUR3}", "broken_auth_advanced_flag": "WiFi{T00_M4NY_US3RS}", "directory_traversal_starter_flag": "WiFi{F0LD3R_EXPL0R3R}", "directory_traversal_intermediate_flag": "WiFi{R0L3_}", "directory_traversal_advanced_flag": "WiFi{R0L3_DIR_TRAVEL_L0L}", "jwt_starter_flag": "WiFi{JWT_N0_S1GN4TUR3}", "jwt_intermediate_flag": "WiFi{JWT_S1GN4TUR3_1N_PL4IN_S1GHT}", "jwt_advanced_flag": "WiFi{JWT_K3Y_M1XUP}", "business_starter_flag": "WiFi{F1R3_S4L3}", "business_intermediate_flag": "WiFi{UNKNOWN}", "business_advanced_flag": "WiFi{EM4IL_P4RSING_C0NFU5I0N}"};
 
 app.get('/', function (req, res) {
   fs.readFile('html/home.html', function (err, data) {
@@ -906,9 +906,12 @@ app.get('/admin_jwt_intermediate', (req, res) => {
 });
 
 
+// Separate keys for signing and verifying (vulnerability)
+const secretKeyUser = 'TUWP-4315-HOQM-DT4K';
+const secretKeyVerify = 'weakKey'; // Weaker key for verification (used by the server by mistake)
+
 app.get('/my_account_jwt_advanced', (req, res) => {
-  // Sign the JWT using the public key (incorrectly)
-  const token = jwt.sign({ role: 'user' }, publicKey, { algorithm: 'HS256' });
+  const token = jwt.sign({ role: 'user' }, secretKeyUser, { algorithm: 'HS256' });
 
   res.cookie('jwt_token', token, { httpOnly: false });
 
@@ -916,29 +919,27 @@ app.get('/my_account_jwt_advanced', (req, res) => {
     <h1>My Account</h1>
     <p>Your current role is <strong>user</strong>.</p>
     <p>A JWT has been sent as a cookie named <code>jwt_token</code> in this response.</p>
-    <p>The public key used for signing the token is available through the button below.</p>
+    <p><strong>Debug Info:</strong></p>
+    <ul>
+      <li>Note: The token is signed with a <em>strong key</em>: TUWP-4315-HOQM-DT4K</li>
+      <li>Hint: Token verification uses a <em>different key</em>: weakKey</li>
+    </ul>
     <form action="/admin_jwt_advanced" method="GET">
       <button type="submit">Attempt to Access Admin Page</button>
     </form>
-    <form action="/view_public_key" method="GET">
-      <button type="submit">View Public Key</button>
-    </form>
   `);
-});
-
-app.get('/view_public_key', (req, res) => {
-  res.send(`<pre>${publicKey}</pre>`);
 });
 
 app.get('/admin_jwt_advanced', (req, res) => {
   const token = req.cookies.jwt_token;
 
   if (!token) {
-    return res.status(401).send('<h1>No JWT Token Found</h1><p>You must provide a valid token in the request.</p>');
+    return res.status(401).send('<h1>No JWT Token Found</h1><p>You must provide a valid token.</p>');
   }
 
   try {
-    const decoded = jwt.verify(token, publicKey, { algorithms: ['HS256'] });
+    // Verifying with the weaker key instead of the proper signing key
+    const decoded = jwt.verify(token, secretKeyVerify, { algorithms: ['HS256'] });
 
     if (decoded.role === 'admin') {
       // User has admin access
@@ -1172,7 +1173,7 @@ app.post('/validate_flag', function (req, res) {
     userPoints.points += 30;
     return res.redirect('/get-points');
   }
-  if (flag == 'WiFi{JWT_S1GN4TUR3_C0NFUS10N}' && !(flagChecks.jwt_advanced_check)) {
+  if (flag == 'WiFi{JWT_K3Y_M1XUP}' && !(flagChecks.jwt_advanced_check)) {
     flagChecks.jwt_advanced_check = true;
     userPoints.points += 50;
     return res.redirect('/get-points');
