@@ -120,10 +120,10 @@ const publicKey = fs.readFileSync('public.pem', 'utf8');
 const userPoints = {points: 0};
 var flagChecks = {"xss_starter_check": false, "xss_intermediate_check": false, "xss_advanced_check": false, "fuzzing_check": false, "sqlite3_starter_check": false, "sqlite3_intermediate_check": false, "sqlite3_advanced_check": false, "broken_auth_starter_check": false, "broken_auth_intermediate_check": false, "broken_auth_advanced_check": false,
   "directory_traversal_starter_check": false, "directory_traversal_intermediate_check": false, "directory_traversal_advanced_check": false, "jwt_starter_check": false, "jwt_intermediate_check": false, "jwt_advanced_check": false, "directory_traversal_starter_check": false, "directory_traversal_intermediate_check": false, "directory_traversal_advanced_check": false,
-  "business_starter_check": false, "business_intermediate_check": false, "business_advanced_check": false
+  "business_starter_check": false, "business_intermediate_check": false, "business_advanced_check": false, "robot_check": false
 };
 var flags = {"xss_starter_flag": "WiFi{X5S_s3Ssi0n_l34k}", "xss_intermediate_flag": "WiFi{X5S_Bl4CK_L13T}", "xss_advanced_flag": "WiFi{X5S_CSP_W1Z4Rd}", "fuzzing_flag": "WiFi{y0U_kN0w_fuZZ1Ng!}", "sqlite3_starter_flag": "WiFi{sQL_m4sT3r}", 
-  "sqlite3_intermediate_flag": "WiFi{C4PTCH4_TH3_FL4G}", "sqlite3_advanced_flag": "WiFi{B34T_TH3_ENC0D1NG}", "broken_auth_starter_flag": "WiFi{R0L3_B4S3D_ADM1N}", "broken_auth_intermediate_flag": "WiFi{R0L3_ID0R_D1SCL0SUR3}", "broken_auth_advanced_flag": "WiFi{T00_M4NY_US3RS}", "directory_traversal_starter_flag": "WiFi{F0LD3R_EXPL0R3R}", "directory_traversal_intermediate_flag": "WiFi{R0L3_}", "directory_traversal_advanced_flag": "WiFi{R0L3_DIR_TRAVEL_L0L}", "jwt_starter_flag": "WiFi{JWT_N0_S1GN4TUR3}", "jwt_intermediate_flag": "WiFi{JWT_S1GN4TUR3_1N_PL4IN_S1GHT}", "jwt_advanced_flag": "WiFi{JWT_K3Y_M1XUP}", "business_starter_flag": "WiFi{F1R3_S4L3}", "business_intermediate_flag": "WiFi{UNKNOWN}", "business_advanced_flag": "WiFi{EM4IL_P4RSING_C0NFU5I0N}"};
+  "sqlite3_intermediate_flag": "WiFi{C4PTCH4_TH3_FL4G}", "sqlite3_advanced_flag": "WiFi{B34T_TH3_ENC0D1NG}", "broken_auth_starter_flag": "WiFi{R0L3_B4S3D_ADM1N}", "broken_auth_intermediate_flag": "WiFi{R0L3_ID0R_D1SCL0SUR3}", "broken_auth_advanced_flag": "WiFi{T00_M4NY_US3RS}", "directory_traversal_starter_flag": "WiFi{F0LD3R_EXPL0R3R}", "directory_traversal_intermediate_flag": "WiFi{R0L3_}", "directory_traversal_advanced_flag": "WiFi{R0L3_DIR_TRAVEL_L0L}", "jwt_starter_flag": "WiFi{JWT_N0_S1GN4TUR3}", "jwt_intermediate_flag": "WiFi{JWT_S1GN4TUR3_1N_PL4IN_S1GHT}", "jwt_advanced_flag": "WiFi{JWT_K3Y_M1XUP}", "business_starter_flag": "WiFi{F1R3_S4L3}", "business_intermediate_flag": "WiFi{UNKNOWN}", "business_advanced_flag": "WiFi{EM4IL_P4RSING_C0NFU5I0N}", "robot_flag": "WiFi{R0B0T5_B3TR4Y3D_ME}"};
 
 app.get('/', function (req, res) {
   fs.readFile('html/home.html', function (err, data) {
@@ -583,7 +583,7 @@ app.get('/get-points', function (req, res) {
 
 
 app.get('/hacker', function (req, res) {
-  data = {Danger:"Close", Hacker:"You are a hacker"};
+  data = {Danger:"Close", Hacker:"You are a hacker!: WiFi{R0B0T5_B3TR4Y3D_ME}"};
   return res.send(data['Hacker']);
 });
 
@@ -1191,6 +1191,11 @@ app.post('/validate_flag', function (req, res) {
   if (flag == 'WiFi{EM4IL_P4RSING_C0NFU5I0N}' && !(flagChecks.business_advanced_check)) {
     flagChecks.business_advanced_check = true;
     userPoints.points += 50;
+    return res.redirect('/get-points');
+  }
+  if (flag == 'WiFi{R0B0T5_B3TR4Y3D_ME}' && !(flagChecks.robot_check)) {
+    flagChecks.robot_check = true;
+    userPoints.points += 10;
     return res.redirect('/get-points');
   }
   else {
