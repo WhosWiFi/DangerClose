@@ -1020,7 +1020,7 @@ let user_starter = {
 };
 
 const products_starter = [
-  { id: 1, name: 'Laptop', price: 1500 },
+  { id: 1, name: 'Laptop {FLAG}', price: 1500 },
   { id: 2, name: 'Smartphone', price: 700 },
   { id: 3, name: 'Headphones', price: 200 },
 ];
