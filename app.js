@@ -6,7 +6,6 @@ var session = require('express-session');
 const svgCaptcha = require('svg-captcha');
 var cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
 const Database = require('better-sqlite3');
 const database = new Database(':memory:');
 const intermediate_database = new Database(':memory:');
@@ -1100,7 +1099,7 @@ app.get('/business_advanced', (req, res) => {
         <h1>Internal User Registration</h1>
         <p>Your email is: user@wifi.com</p>
         <p>Your email must contain the domain: dangerclose.com</p>
-        <p>Example email address: customer@dangerclose.com</p>
+        <p>Example email address: employee@dangerclose.com</p>
         <p>Hint: RFC 5322 addr-spec display-name</p>
         <form method="POST" action="/register_advanced">
           <label>Email: <input type="text" name="email" required></label>
