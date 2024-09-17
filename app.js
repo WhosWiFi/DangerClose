@@ -14,10 +14,6 @@ const advanced_database = new Database(':memory:');
 const secret_nonce_key = 'secret-nonce-key';
 const advanced_flag = 'WiFi{X5S_CSP_W1Z4Rd}';
 
-// Load RSA keys for JWT authentication
-const privateKey = fs.readFileSync('private.pem', 'utf8');
-const publicKey = fs.readFileSync('public.pem', 'utf8');
-
 // Middleware
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -117,6 +113,8 @@ const insert_advanced_Book = advanced_database.prepare('INSERT INTO books (bookn
 insert_advanced_Book.run('Harry Potter', 'You are a wizard Harry!', '10/10');
 insert_advanced_Book.run('Dune', 'The start of science fiction.', '8/10');
 insert_advanced_Book.run('The Giver', 'A world living without color.', '7/10');
+
+const publicKey = fs.readFileSync('public.pem', 'utf8');
 
 
 const userPoints = {points: 0};
@@ -909,18 +907,27 @@ app.get('/admin_jwt_intermediate', (req, res) => {
 
 
 app.get('/my_account_jwt_advanced', (req, res) => {
-  const token = jwt.sign({ role: 'user' }, privateKey, { algorithm: 'RS256' });
+  // Sign the JWT using the public key (incorrectly)
+  const token = jwt.sign({ role: 'user' }, publicKey, { algorithm: 'HS256' });
 
   res.cookie('jwt_token', token, { httpOnly: false });
 
   res.send(`
     <h1>My Account</h1>
     <p>Your current role is <strong>user</strong>.</p>
-    <p>A JWT has been sent as a cookie named <code>jwt_token</code>.</p>
+    <p>A JWT has been sent as a cookie named <code>jwt_token</code> in this response.</p>
+    <p>The public key used for signing the token is available through the button below.</p>
     <form action="/admin_jwt_advanced" method="GET">
       <button type="submit">Attempt to Access Admin Page</button>
     </form>
+    <form action="/view_public_key" method="GET">
+      <button type="submit">View Public Key</button>
+    </form>
   `);
+});
+
+app.get('/view_public_key', (req, res) => {
+  res.send(`<pre>${publicKey}</pre>`);
 });
 
 app.get('/admin_jwt_advanced', (req, res) => {
@@ -931,18 +938,24 @@ app.get('/admin_jwt_advanced', (req, res) => {
   }
 
   try {
-    const decoded = jwt.verify(token, publicKey, { algorithms: ['RS256', 'HS256'], secret: secretKey });
+    const decoded = jwt.verify(token, publicKey, { algorithms: ['HS256'] });
 
     if (decoded.role === 'admin') {
-      res.send(`
-        <h1>Admin Page</h1>
-        <p>Flag: JWT_ADVANCED_BYPASS_FLAG</p>
-      `);
+      // User has admin access
+      fs.readFile('html/jwt_advanced_admin_page.html', (err, data) => {
+        if (err) {
+          res.status(500).send('Error loading admin page');
+        } else {
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.write(data);
+            res.end();
+          }
+      });
     } else {
       res.send('<h1>Access Denied</h1><p>You are not an admin.</p>');
     }
   } catch (err) {
-    res.status(400).send('<h1>Invalid Token</h1><p>The token is invalid, malformed, or not signed correctly.</p>');
+    res.status(400).send('<h1>Invalid Token</h1><p>The token is invalid or not signed correctly.</p>');
   }
 });
 
