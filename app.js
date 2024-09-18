@@ -123,7 +123,7 @@ var flagChecks = {"xss_starter_check": false, "xss_intermediate_check": false, "
   "business_starter_check": false, "business_intermediate_check": false, "business_advanced_check": false, "robot_check": false
 };
 var flags = {"xss_starter_flag": "WiFi{X5S_s3Ssi0n_l34k}", "xss_intermediate_flag": "WiFi{X5S_Bl4CK_L13T}", "xss_advanced_flag": "WiFi{X5S_CSP_W1Z4Rd}", "fuzzing_flag": "WiFi{y0U_kN0w_fuZZ1Ng!}", "sqlite3_starter_flag": "WiFi{sQL_m4sT3r}", 
-  "sqlite3_intermediate_flag": "WiFi{C4PTCH4_TH3_FL4G}", "sqlite3_advanced_flag": "WiFi{B34T_TH3_ENC0D1NG}", "broken_auth_starter_flag": "WiFi{R0L3_B4S3D_ADM1N}", "broken_auth_intermediate_flag": "WiFi{R0L3_ID0R_D1SCL0SUR3}", "broken_auth_advanced_flag": "WiFi{T00_M4NY_US3RS}", "directory_traversal_starter_flag": "WiFi{F0LD3R_EXPL0R3R}", "directory_traversal_intermediate_flag": "WiFi{R0L3_}", "directory_traversal_advanced_flag": "WiFi{R0L3_DIR_TRAVEL_L0L}", "jwt_starter_flag": "WiFi{JWT_N0_S1GN4TUR3}", "jwt_intermediate_flag": "WiFi{JWT_S1GN4TUR3_1N_PL4IN_S1GHT}", "jwt_advanced_flag": "WiFi{JWT_K3Y_M1XUP}", "business_starter_flag": "WiFi{F1R3_S4L3}", "business_intermediate_flag": "WiFi{UNKNOWN}", "business_advanced_flag": "WiFi{EM4IL_P4RSING_C0NFU5I0N}", "robot_flag": "WiFi{R0B0T5_B3TR4Y3D_ME}"};
+  "sqlite3_intermediate_flag": "WiFi{C4PTCH4_TH3_FL4G}", "sqlite3_advanced_flag": "WiFi{B34T_TH3_ENC0D1NG}", "broken_auth_starter_flag": "WiFi{R0L3_B4S3D_ADM1N}", "broken_auth_intermediate_flag": "WiFi{R0L3_ID0R_D1SCL0SUR3}", "broken_auth_advanced_flag": "WiFi{T00_M4NY_US3RS}", "directory_traversal_starter_flag": "WiFi{F0LD3R_EXPL0R3R}", "directory_traversal_intermediate_flag": "WiFi{R0L3_}", "directory_traversal_advanced_flag": "WiFi{R0L3_DIR_TRAVEL_L0L}", "jwt_starter_flag": "WiFi{JWT_N0_S1GN4TUR3}", "jwt_intermediate_flag": "WiFi{JWT_S1GN4TUR3_1N_PL4IN_S1GHT}", "jwt_advanced_flag": "WiFi{JWT_K3Y_M1XUP}", "business_starter_flag": "WiFi{F1R3_S4L3}", "business_intermediate_flag": "WiFi{C0UP0N_L1V3S_0N}", "business_advanced_flag": "WiFi{EM4IL_P4RSING_C0NFU5I0N}", "robot_flag": "WiFi{R0B0T5_B3TR4Y3D_ME}"};
 
 app.get('/', function (req, res) {
   fs.readFile('html/home.html', function (err, data) {
@@ -1031,6 +1031,74 @@ app.post('/buy_starter', (req, res) => {
 });
 
 
+app.get('/dumpster_page', (req, res) => {
+  const coupon = 'DISCOUNT50';
+  const expirationDate = '2023-09-10';
+
+  res.send(`
+    <h1>Dumpster</h1>
+    <p>You found an old coupon in the trash!</p>
+    <p>But it seems to be expired.</p>
+    <p><strong>Coupon Code:</strong> ${coupon}</p>
+    <p><strong>Expiration Date:</strong> ${expirationDate}</p>
+    <form action="/intermediate_product_page" method="GET">
+      <button type="submit">Go to Product Page</button>
+    </form>
+  `);
+});
+
+
+app.get('/intermediate_product_page', (req, res) => {
+  const coupon = 'DISCOUNT50';
+  const expirationDate = '2023-09-10';
+
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Product Checkout</title>
+    </head>
+    <body>
+      <h1>Checkout</h1>
+      <p>Buy our special item for $100!</p>
+      <form action="/apply_coupon" method="POST">
+        <label for="coupon">Coupon Code:</label>
+          <input type="text" id="coupon" name="coupon" value="${coupon}" readonly>
+          <input type="hidden" name="expirationDate" value="${expirationDate}">
+        <button type="submit">Apply Coupon</button>
+      </form>  
+      <form action="/dumpster_page" method="GET">
+        <button type="submit">Search Trash</button>
+      </form>
+    </body>
+    </html>
+  `);
+});
+
+
+app.post('/apply_coupon', (req, res) => {
+  const { coupon, expirationDate } = req.body;
+  const currentDate = new Date().toISOString().split('T')[0];
+
+  if (coupon !== 'DISCOUNT50') {
+    return res.send('<h1>Invalid Coupon</h1><p>This coupon code is invalid.</p>');
+  }
+
+  if (currentDate > expirationDate) {
+    return res.send('<h1>Coupon Expired</h1><p>This coupon has expired.</p>');
+  }
+
+  res.send(`
+    <h1>Coupon Applied!</h1>
+    <p>Your coupon is valid, and you’ve received a discount.</p>
+    <p>Congratulations! Here is your flag: <strong>WiFi{C0UP0N_L1V3S_0N}</strong></p>
+  `);
+});
+
+
+
 app.get('/business_advanced', (req, res) => {
   res.send(`
     <html>
@@ -1183,7 +1251,7 @@ app.post('/validate_flag', function (req, res) {
     userPoints.points += 10;
     return res.redirect('/get-points');
   }
-  if (flag == 'WiFi{UNKNOWN}' && !(flagChecks.business_intermediate_check)) {
+  if (flag == 'WiFi{C0UP0N_L1V3S_0N}' && !(flagChecks.business_intermediate_check)) {
     flagChecks.business_intermediate_check = true;
     userPoints.points += 30;
     return res.redirect('/get-points');
