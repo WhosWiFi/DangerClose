@@ -906,9 +906,8 @@ app.get('/admin_jwt_intermediate', (req, res) => {
 });
 
 
-// Separate keys for signing and verifying (vulnerability)
 const secretKeyUser = 'TUWP-4315-HOQM-DT4K';
-const secretKeyVerify = 'weakKey'; // Weaker key for verification (used by the server by mistake)
+const secretKeyVerify = 'weakKey';
 
 app.get('/my_account_jwt_advanced', (req, res) => {
   const token = jwt.sign({ role: 'user' }, secretKeyUser, { algorithm: 'HS256' });
@@ -938,7 +937,6 @@ app.get('/admin_jwt_advanced', (req, res) => {
   }
 
   try {
-    // Verifying with the weaker key instead of the proper signing key
     const decoded = jwt.verify(token, secretKeyVerify, { algorithms: ['HS256'] });
 
     if (decoded.role === 'admin') {
@@ -1013,7 +1011,7 @@ app.post('/buy_starter', (req, res) => {
 
   user_starter.balance -= parsedPrice;
 
-  if (product.id === 1) {  // Laptop has id = 1
+  if (product.id === 1) { 
     return res.send(`
       <h1>Congratulations!</h1>
       <p>Flag: WiFi{F1R3_S4L3}</p>
