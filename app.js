@@ -124,7 +124,7 @@ var flagChecks = {"xss_starter_check": false, "xss_intermediate_check": false, "
   "business_starter_check": false, "business_intermediate_check": false, "business_advanced_check": false, "robot_check": false
 };
 var flags = {"xss_starter_flag": "WiFi{X5S_s3Ssi0n_l34k}", "xss_intermediate_flag": "WiFi{X5S_Bl4CK_L13T}", "xss_advanced_flag": "WiFi{X5S_CSP_W1Z4Rd}", "fuzzing_flag": "WiFi{y0U_kN0w_fuZZ1Ng!}", "sqlite3_starter_flag": "WiFi{sQL_m4sT3r}", 
-  "sqlite3_intermediate_flag": "WiFi{C4PTCH4_TH3_FL4G}", "sqlite3_advanced_flag": "WiFi{B34T_TH3_ENC0D1NG}", "broken_auth_starter_flag": "WiFi{R0L3_B4S3D_ADM1N}", "broken_auth_intermediate_flag": "WiFi{R0L3_ID0R_D1SCL0SUR3}", "broken_auth_advanced_flag": "WiFi{T00_M4NY_US3RS}", "directory_traversal_starter_flag": "WiFi{F0LD3R_EXPL0R3R}", "directory_traversal_intermediate_flag": "WiFi{R0L3_}", "directory_traversal_advanced_flag": "WiFi{R0L3_DIR_TRAVEL_L0L}", "jwt_starter_flag": "WiFi{JWT_N0_S1GN4TUR3}", "jwt_intermediate_flag": "WiFi{JWT_S1GN4TUR3_1N_PL4IN_S1GHT}", "jwt_advanced_flag": "WiFi{JWT_K3Y_M1XUP}", "business_starter_flag": "WiFi{F1R3_S4L3}", "business_intermediate_flag": "WiFi{C0UP0N_L1V3S_0N}", "business_advanced_flag": "WiFi{EM4IL_P4RSING_C0NFU5I0N}", "robot_flag": "WiFi{R0B0T5_B3TR4Y3D_ME}"};
+  "sqlite3_intermediate_flag": "WiFi{C4PTCH4_TH3_FL4G}", "sqlite3_advanced_flag": "WiFi{B34T_TH3_ENC0D1NG}", "broken_auth_starter_flag": "WiFi{R0L3_B4S3D_ADM1N}", "broken_auth_intermediate_flag": "WiFi{R0L3_ID0R_D1SCL0SUR3}", "broken_auth_advanced_flag": "WiFi{T00_M4NY_US3RS}", "directory_traversal_starter_flag": "WiFi{F0LD3R_EXPL0R3R}", "directory_traversal_intermediate_flag": "WiFi{0NE_4_TW0}", "directory_traversal_advanced_flag": "WiFi{R0L3_DIR_TRAVEL_L0L}", "jwt_starter_flag": "WiFi{JWT_N0_S1GN4TUR3}", "jwt_intermediate_flag": "WiFi{JWT_S1GN4TUR3_1N_PL4IN_S1GHT}", "jwt_advanced_flag": "WiFi{JWT_K3Y_M1XUP}", "business_starter_flag": "WiFi{F1R3_S4L3}", "business_intermediate_flag": "WiFi{C0UP0N_L1V3S_0N}", "business_advanced_flag": "WiFi{EM4IL_P4RSING_C0NFU5I0N}", "robot_flag": "WiFi{R0B0T5_B3TR4Y3D_ME}"};
 
 app.get('/', function (req, res) {
   fs.readFile('html/home.html', function (err, data) {
@@ -1149,6 +1149,15 @@ app.get('/logout', function (req, res) {
   });
 });
 
+
+app.get('/directory_traversal_starter_lab_description', function (req, res) {
+  fs.readFile('html/directory_traversal_starter_lab_description.html', function (err, data) {
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(data);
+    return res.end();
+  });
+});
+
 // Base directory where images and other files are located
 const BASE_DIRECTORY = path.join(__dirname, 'directory_traversal-7uRtyZ-392012');
 
@@ -1179,6 +1188,53 @@ app.get('/directory_traversal_starter', (req, res) => {
       res.send(data);
     } else {
       // Otherwise, send the content of the requested file
+      res.send('<pre>' + data.toString() + '</pre>');
+    }
+  });
+});
+
+
+app.get('/directory_traversal_intermediate_lab_description', function (req, res) {
+  fs.readFile('html/directory_traversal_intermediate_lab_description.html', function (err, data) {
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(data);
+    return res.end();
+  });
+});
+
+// Base directory where images and other files are located
+const BASE_DIRECTORY_INTERMEDIATE = path.join(__dirname, 'directory_traversal-34jNwe-6s32b8');
+
+app.get('/directory_traversal_intermediate', (req, res) => {
+  let filePath = req.query.file;
+
+  if (!filePath) {
+    return res.status(400).send('No file specified.');
+  }
+
+  // Strip any occurrences of ../ to prevent basic traversal attacks
+  filePath = filePath.replace(/\.\.\//g, '');
+
+  // Join the sanitized path with the base directory
+  const resolvedPath = path.join(BASE_DIRECTORY_INTERMEDIATE, filePath);
+
+  // Ensure the resolved path is within the base directory to prevent unauthorized access
+  if (!resolvedPath.startsWith(BASE_DIRECTORY_INTERMEDIATE)) {
+    return res.status(403).send('Access denied: Invalid path.');
+  }
+
+  // Check if the file exists
+  fs.readFile(resolvedPath, (err, data) => {
+    if (err) {
+      return res.status(404).send('File not found.');
+    }
+
+    // If it's an image, return the image
+    if (filePath.endsWith('nature.jpg')) {
+      res.setHeader('Content-Type', 'image/jpeg');
+      res.send(data);
+    } else {
+      // Otherwise, return the content of the file
       res.send('<pre>' + data.toString() + '</pre>');
     }
   });
