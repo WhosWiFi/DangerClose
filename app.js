@@ -1,6 +1,7 @@
 var express = require('express');
 var app = express();
 var fs = require('fs');
+const path = require('path');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 const svgCaptcha = require('svg-captcha');
@@ -1148,8 +1149,39 @@ app.get('/logout', function (req, res) {
   });
 });
 
-app.get('/common', function (req, res) {
-  res.send();
+// Base directory where images and other files are located
+const BASE_DIRECTORY = path.join(__dirname, 'directory_traversal-7uRtyZ-392012');
+
+app.get('/directory_traversal_starter', (req, res) => {
+  const filePath = req.query.file;
+
+  if (!filePath) {
+    return res.status(400).send('No file specified.');
+  }
+
+  // Join the user input with the base directory
+  const resolvedPath = path.join(BASE_DIRECTORY, filePath);
+
+  // Ensure the path is within the base directory to prevent access to sensitive files
+  if (!resolvedPath.startsWith(BASE_DIRECTORY)) {
+    return res.status(403).send('Access denied: Invalid path.');
+  }
+
+  // Check if the file exists
+  fs.readFile(resolvedPath, (err, data) => {
+    if (err) {
+      return res.status(404).send('File not found.');
+    }
+
+    // If it's the nature.jpg file, show the image
+    if (filePath.endsWith('nature.jpg')) {
+      res.setHeader('Content-Type', 'image/jpeg');
+      res.send(data);
+    } else {
+      // Otherwise, send the content of the requested file
+      res.send('<pre>' + data.toString() + '</pre>');
+    }
+  });
 });
 
 app.get('/common/config.js', function (req, res) {
