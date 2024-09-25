@@ -115,8 +115,6 @@ insert_advanced_Book.run('Harry Potter', 'You are a wizard Harry!', '10/10');
 insert_advanced_Book.run('Dune', 'The start of science fiction.', '8/10');
 insert_advanced_Book.run('The Giver', 'A world living without color.', '7/10');
 
-const publicKey = fs.readFileSync('public.pem', 'utf8');
-
 
 const userPoints = {points: 0};
 var flagChecks = {"xss_starter_check": false, "xss_intermediate_check": false, "xss_advanced_check": false, "fuzzing_check": false, "sqlite3_starter_check": false, "sqlite3_intermediate_check": false, "sqlite3_advanced_check": false, "broken_auth_starter_check": false, "broken_auth_intermediate_check": false, "broken_auth_advanced_check": false,
@@ -1158,7 +1156,6 @@ app.get('/directory_traversal_starter_lab_description', function (req, res) {
   });
 });
 
-// Base directory where images and other files are located
 const BASE_DIRECTORY = path.join(__dirname, 'directory_traversal-7uRtyZ-392012');
 
 app.get('/directory_traversal_starter', (req, res) => {
@@ -1176,18 +1173,15 @@ app.get('/directory_traversal_starter', (req, res) => {
     return res.status(403).send('Access denied: Invalid path.');
   }
 
-  // Check if the file exists
   fs.readFile(resolvedPath, (err, data) => {
     if (err) {
       return res.status(404).send('File not found.');
     }
 
-    // If it's the nature.jpg file, show the image
     if (filePath.endsWith('nature.jpg')) {
       res.setHeader('Content-Type', 'image/jpeg');
       res.send(data);
     } else {
-      // Otherwise, send the content of the requested file
       res.send('<pre>' + data.toString() + '</pre>');
     }
   });
@@ -1202,7 +1196,6 @@ app.get('/directory_traversal_intermediate_lab_description', function (req, res)
   });
 });
 
-// Base directory where images and other files are located
 const BASE_DIRECTORY_INTERMEDIATE = path.join(__dirname, 'directory_traversal-34jNwe-6s32b8');
 
 app.get('/directory_traversal_intermediate', (req, res) => {
@@ -1215,7 +1208,6 @@ app.get('/directory_traversal_intermediate', (req, res) => {
   // Strip any occurrences of ../ to prevent basic traversal attacks
   filePath = filePath.replace(/\.\.\//g, '');
 
-  // Join the sanitized path with the base directory
   const resolvedPath = path.join(BASE_DIRECTORY_INTERMEDIATE, filePath);
 
   // Ensure the resolved path is within the base directory to prevent unauthorized access
@@ -1229,12 +1221,10 @@ app.get('/directory_traversal_intermediate', (req, res) => {
       return res.status(404).send('File not found.');
     }
 
-    // If it's an image, return the image
     if (filePath.endsWith('nature.jpg')) {
       res.setHeader('Content-Type', 'image/jpeg');
       res.send(data);
     } else {
-      // Otherwise, return the content of the file
       res.send('<pre>' + data.toString() + '</pre>');
     }
   });
@@ -1266,18 +1256,15 @@ app.get('/directory_traversal_advanced', (req, res) => {
     return res.status(403).send('Access denied: Invalid path.');
   }
 
-  // Check if the file exists
   fs.readFile(resolvedPath, (err, data) => {
     if (err) {
       return res.status(404).send('File not found.');
     }
 
-    // If it's an image, return the image
     if (filePath.endsWith('nature.jpg')) {
       res.setHeader('Content-Type', 'image/jpeg');
       res.send(data);
     } else {
-      // Otherwise, return the content of the file
       res.send('<pre>' + data.toString() + '</pre>');
     }
   });
