@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GraphQL Query Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        pre {
+            background-color: #282c34;
+            color: #ffffff;
+            padding: 20px;
+            border-radius: 5px;
+            overflow: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>GraphQL Query Example</h1>
+    <h2>Query Definition</h2>
+    <pre><code>POST /graphql HTTP/1.1
+Host: localhost:3000
+Content-Type: application/json
+
+{
+    "query": "query {\r\n    getAllBlogPosts {\r\n        title\r\n        summary\r\n        id\r\n    }\r\n}"
+}</code></pre>
+<h4>Introspection Query should be disabled.</h4>
+</body>
+</html>
