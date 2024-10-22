@@ -155,6 +155,7 @@ async function startApolloServer() {
   const server = new ApolloServer({
     typeDefs,
     resolvers,
+    introspection: true,
   });
 
   // Start the Apollo Server
@@ -162,8 +163,6 @@ async function startApolloServer() {
 
   // Apply Apollo GraphQL middleware to the existing Express app
   server.applyMiddleware({ app });
-
-  console.log(`GraphQL endpoint ready at yo momma`);
 }
 
 // Call this to start Apollo Server without wrapping the rest of your app
