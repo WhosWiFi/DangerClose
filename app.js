@@ -165,30 +165,30 @@ const resolvers = {
         id: 5,
       },
     ],
-    getUsers: () => users,
+    getUsers: () => {
+      // Return users without the password field
+      return users.map(({ password, ...user }) => user);
+    },
     secretQuery: () => "FLAG{introspection_is_fun}",
   },
   Mutation: {
     changePassword: (_, { id, newPassword }) => {
-      // Ensure id is treated as an integer
-      const userId = parseInt(id, 10); // Convert id to an integer if necessary
+      const userId = parseInt(id, 10);
   
-      // Find the user by ID
       let user = null;
       for (let i = 0; i < users.length; i++) {
         if (users[i].id === userId) {
           user = users[i];
-          break; // Exit the loop once the user is found
+          break;
         }
       }
   
       if (!user) {
         throw new Error('User not found');
       }
-  
-      // Update the user's password
+
       user.password = newPassword; 
-      return user; // Return the updated user
+      return user;
     },
   },
 };
