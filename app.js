@@ -11,6 +11,7 @@ const Database = require('better-sqlite3');
 const database = new Database(':memory:');
 const intermediate_database = new Database(':memory:');
 const advanced_database = new Database(':memory:');
+const { ApolloServer, gql } = require('apollo-server-express');
 
 const secret_nonce_key = 'secret-nonce-key';
 const advanced_flag = 'WiFi{X5S_CSP_W1Z4Rd}';
@@ -114,6 +115,59 @@ const insert_advanced_Book = advanced_database.prepare('INSERT INTO books (bookn
 insert_advanced_Book.run('Harry Potter', 'You are a wizard Harry!', '10/10');
 insert_advanced_Book.run('Dune', 'The start of science fiction.', '8/10');
 insert_advanced_Book.run('The Giver', 'A world living without color.', '7/10');
+
+// Define graphql schema
+const typeDefs = gql`
+  type Query {
+    getAllBlogPosts: [BlogPost]
+    secretQuery: String
+  }
+
+  type BlogPost {
+    image: String
+    title: String
+    summary: String
+    id: Int
+  }
+`;
+
+// Define resolvers
+const resolvers = {
+  Query: {
+    getAllBlogPosts: () => [
+      {
+        title: "The Art Of Communication",
+        summary: "I'm a bit of a Francophile...",
+        id: 4,
+      },
+      {
+        title: "The Digital Fairytale",
+        summary: "Once upon a time...",
+        id: 5,
+      },
+    ],
+    secretQuery: () => "FLAG{introspection_is_fun}",
+  },
+};
+
+// Function to start Apollo Server and apply middleware
+async function startApolloServer() {
+  const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+  });
+
+  // Start the Apollo Server
+  await server.start();
+
+  // Apply Apollo GraphQL middleware to the existing Express app
+  server.applyMiddleware({ app });
+
+  console.log(`GraphQL endpoint ready at yo momma`);
+}
+
+// Call this to start Apollo Server without wrapping the rest of your app
+startApolloServer();
 
 
 const userPoints = {points: 0};
