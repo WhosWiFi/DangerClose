@@ -11,7 +11,10 @@ const Database = require('better-sqlite3');
 const database = new Database(':memory:');
 const intermediate_database = new Database(':memory:');
 const advanced_database = new Database(':memory:');
-const { ApolloServer, gql } = require('apollo-server-express');
+const { ApolloServer } = require('@apollo/server');
+const { expressMiddleware } = require('@apollo/server/express4');
+const { ApolloServerPluginLandingPageDisabled } = require('@apollo/server/plugin/disabled');
+const { json } = require('body-parser');
 
 const secret_nonce_key = 'secret-nonce-key';
 const advanced_flag = 'WiFi{X5S_CSP_W1Z4Rd}';
@@ -117,17 +120,23 @@ insert_advanced_Book.run('Dune', 'The start of science fiction.', '8/10');
 insert_advanced_Book.run('The Giver', 'A world living without color.', '7/10');
 
 // Define graphql schema
-const typeDefs = gql`
+const typeDefs = `#graphql
   type Query {
     getAllBlogPosts: [BlogPost]
+    getUsers: [userInfo]
     secretQuery: String
   }
 
   type BlogPost {
-    image: String
     title: String
     summary: String
     id: Int
+  }
+
+  type userInfo {
+    id: Int
+    username: String
+    password: String
   }
 `;
 
@@ -146,27 +155,40 @@ const resolvers = {
         id: 5,
       },
     ],
+    getUsers: () => [
+      {
+        id: 1,
+        username: "admin",
+        password: "Welcome1!",
+      },
+      {
+        id: 2,
+        username: "wifi",
+        password: "ethernet",
+      },
+      {
+        id: 3,
+        username: "giorno",
+        password: "italy",
+      },
+    ],
     secretQuery: () => "FLAG{introspection_is_fun}",
   },
 };
 
-// Function to start Apollo Server and apply middleware
-async function startApolloServer() {
-  const server = new ApolloServer({
-    typeDefs,
-    resolvers,
-    introspection: true,
-  });
+// Set up Apollo Server
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  plugins: [ApolloServerPluginLandingPageDisabled()], // Disable Apollo Sandbox/Studio
+});
 
-  // Start the Apollo Server
-  await server.start();
+const startServer = async () => {
+  await server.start(); // Start Apollo server
+  app.use('/graphql', json(), expressMiddleware(server)); // Apply middleware
+};
 
-  // Apply Apollo GraphQL middleware to the existing Express app
-  server.applyMiddleware({ app });
-}
-
-// Call this to start Apollo Server without wrapping the rest of your app
-startApolloServer();
+startServer();
 
 
 const userPoints = {points: 0};
@@ -195,6 +217,14 @@ app.get('/flag', function (req, res) {
 
 app.get('/challenges', function (req, res) {
   fs.readFile('html/challenges.html', function (err, data) {
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(data);
+    return res.end();
+  });
+});
+
+app.get('/graphql_starter', function (req, res) {
+  fs.readFile('html/graphql_starter_lab.html', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write(data);
     return res.end();
