@@ -155,14 +155,14 @@ const resolvers = {
   Query: {
     getAllBlogPosts: () => [
       {
-        title: "The Art Of Communication",
-        summary: "I'm a bit of a Francophile...",
-        id: 4,
+        title: "Pigs are Flying",
+        summary: "It's actually happening.",
+        id: 1,
       },
       {
-        title: "The Digital Fairytale",
-        summary: "Once upon a time...",
-        id: 5,
+        title: "The Flag",
+        summary: "WiFi{QUERY_C0MPL3TE}",
+        id: 2,
       },
     ],
     getUsers: () => {
@@ -249,7 +249,15 @@ app.get('/graphql_starter', function (req, res) {
 });
 
 app.get('/graphql_intermediate', function (req, res) {
-  fs.readFile('html/graphql_intermediate_login.html', function (err, data) {
+  fs.readFile('html/graphql_intermediate_lab.html', function (err, data) {
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(data);
+    return res.end();
+  });
+});
+
+app.get('/graphql_advanced', function (req, res) {
+  fs.readFile('html/graphql_login.html', function (err, data) {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write(data);
     return res.end();
@@ -262,7 +270,7 @@ app.post('/graphql_admin_login', (req, res) => {
   const adminUser = users.find(user => user.username === 'admin');
 
   if (adminUser && adminUser.username === username && adminUser.password === password) {
-    res.sendFile(path.join(__dirname, 'html', 'graphql_intermediate_admin_page.html'));
+    res.sendFile(path.join(__dirname, 'html', 'graphql_admin_page.html'));
   } else {
     res.status(401).send('<h2>Invalid credentials. Try again.</h2>');
   }
@@ -1512,17 +1520,17 @@ app.post('/validate_flag', function (req, res) {
     userPoints.points += 50;
     return res.redirect('/get-points');
   }
-  if (flag == 'WiFi{INTR0SPECT10N_ON}' && !(flagChecks.graphql_starter_check)) {
+  if (flag == 'WiFi{QUERY_C0MPL3TE}' && !(flagChecks.graphql_starter_check)) {
     flagChecks.graphql_starter_check = true;
     userPoints.points += 10;
     return res.redirect('/get-points');
   }
-  if (flag == 'WiFi{MUTAT10N_T4K30V3R}' && !(flagChecks.graphql_intermediate_check)) {
+  if (flag == 'WiFi{INTR0SPECT10N_ON}' && !(flagChecks.graphql_intermediate_check)) {
     flagChecks.graphql_intermediate_check = true;
     userPoints.points += 30;
     return res.redirect('/get-points');
   }
-  if (flag == 'WiFi{sdfsdfdsfdsf}' && !(flagChecks.graphql_advanced_check)) {
+  if (flag == 'WiFi{MUTAT10N_T4K30V3R}' && !(flagChecks.graphql_advanced_check)) {
     flagChecks.graphql_advanced_check = true;
     userPoints.points += 50;
     return res.redirect('/get-points');
