@@ -248,6 +248,26 @@ app.get('/graphql_starter', function (req, res) {
   });
 });
 
+app.get('/graphql_intermediate', function (req, res) {
+  fs.readFile('html/graphql_intermediate_login.html', function (err, data) {
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(data);
+    return res.end();
+  });
+});
+
+app.post('/graphql_admin_login', (req, res) => {
+  const { username, password } = req.body;
+
+  const adminUser = users.find(user => user.username === 'admin');
+
+  if (adminUser && adminUser.username === username && adminUser.password === password) {
+    res.sendFile(path.join(__dirname, 'html', 'graphql_intermediate_admin_page.html'));
+  } else {
+    res.status(401).send('<h2>Invalid credentials. Try again.</h2>');
+  }
+});
+
 app.post('/xssCheck', (req, res) => {
   const { query } = req.body;
 
@@ -1497,7 +1517,7 @@ app.post('/validate_flag', function (req, res) {
     userPoints.points += 10;
     return res.redirect('/get-points');
   }
-  if (flag == 'WiFi{dsffgds}' && !(flagChecks.graphql_intermediate_check)) {
+  if (flag == 'WiFi{MUTAT10N_T4K30V3R}' && !(flagChecks.graphql_intermediate_check)) {
     flagChecks.graphql_intermediate_check = true;
     userPoints.points += 30;
     return res.redirect('/get-points');
