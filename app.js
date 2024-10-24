@@ -1569,7 +1569,7 @@ app.post('/validate_flag', function (req, res) {
     userPoints.points += 30;
     return res.redirect('/get-points');
   }
-  if (flag == 'WiFi{vffvd}' && !(flagChecks.obfuscation_advanced_check)) {
+  if (flag == 'WiFi{R3VERSE_TH3_MESSAGE}' && !(flagChecks.obfuscation_advanced_check)) {
     flagChecks.obfuscation_advanced_check = true;
     userPoints.points += 50;
     return res.redirect('/get-points');
