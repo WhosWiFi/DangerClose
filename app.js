@@ -1564,7 +1564,7 @@ app.post('/validate_flag', function (req, res) {
     userPoints.points += 10;
     return res.redirect('/get-points');
   }
-  if (flag == 'WiFi{sfgsd}' && !(flagChecks.obfuscation_intermediate_check)) {
+  if (flag == 'WiFi{N0_M0R3_H1D1NG}' && !(flagChecks.obfuscation_intermediate_check)) {
     flagChecks.obfuscation_intermediate_check = true;
     userPoints.points += 30;
     return res.redirect('/get-points');
