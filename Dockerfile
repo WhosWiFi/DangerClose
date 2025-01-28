@@ -6,7 +6,7 @@
 
 # Want to help us make this template better? Share your feedback here: https://forms.gle/ybq9Krt8jtBL3iCk7
 
-ARG NODE_VERSION=22.8.0
+ARG NODE_VERSION=18.20.5
 
 FROM node:${NODE_VERSION}-alpine
 
@@ -32,7 +32,7 @@ USER node
 COPY . .
 
 # Expose the port that the application listens on.
-EXPOSE 3000
+EXPOSE 4123
 
 # Run the application.
 CMD node app.js
