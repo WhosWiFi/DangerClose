@@ -33,19 +33,19 @@ git clone https://github.com/WhosWiFi/DangerClose.git
 ```
 cd DangerClose
 ```
-3. Install Node.js v22.8
+3. Use nvm for managing node version
 ```
-https://nodejs.org/en/download/prebuilt-installer
+https://github.com/nvm-sh/nvm
+or
+brew install nvm
 ```
-4. Use npm to install the required dependencies
+4. nvm install 18
+
+5. nvm use 18
+
+6. npm rebuild
+
+7. node app.js
 ```
-npm install
-```
-5. Start the application
-```
-node app.js
-```
-6. The application can be accessed on a web browser at the following URL
-```
-http://localhost:3000
+http://localhost:4123
 ```
