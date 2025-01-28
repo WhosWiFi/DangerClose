@@ -1216,7 +1216,7 @@ app.get('/intermediate_product_page', (req, res) => {
       <p>Buy our special item for $100!</p>
       <form action="/apply_coupon" method="POST">
         <label for="coupon">Coupon Code:</label>
-          <input type="text" id="coupon" name="coupon" value="${coupon}" readonly>
+          <input type="text" id="coupon" name="coupon" value="">
           <input type="hidden" name="expirationDate" value="${expirationDate}">
         <button type="submit">Apply Coupon</button>
       </form>  
@@ -1243,7 +1243,7 @@ app.post('/apply_coupon', (req, res) => {
 
   res.send(`
     <h1>Coupon Applied!</h1>
-    <p>Your coupon is valid, and you’ve received a discount.</p>
+    <p>Your coupon is valid, and you've received a discount.</p>
     <p>Congratulations! Here is your flag: <strong>WiFi{C0UP0N_L1V3S_0N}</strong></p>
   `);
 });
@@ -1276,9 +1276,13 @@ app.post('/register_advanced', (req, res) => {
     return res.status(400).send('Invalid email. You must use an email from dangerclose.com.');
   }
 
-  const isBypassSuccessful = email
-  
-  if (isBypassSuccessful == 'user@wifi.com(dangerclose.com)') {
+  // Check for RFC 5322 email parsing confusion patterns
+  const validFormats = [
+    'user@wifi.com(dangerclose.com)',
+    'user@wifi.com<dangerclose.com>'
+  ];
+
+  if (validFormats.includes(email)) {
     return res.send(`
       <h2>Inbox Contains 1 new message.</h2>
       <h3>Congratulations!</h3>
