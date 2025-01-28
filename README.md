@@ -20,7 +20,7 @@ docker compose up --build
 ```
 4. The application is hosted at:
 ```
-http://localhost:3000
+http://localhost:4123
 ```
 
 ## STANDALONE INSTALLATION
