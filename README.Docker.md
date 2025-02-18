@@ -1,5 +1,16 @@
 ### Building and running your application
 
+---------------------------------------------------
+
+# Main Two Steps Needed
+
+# Build
+docker build . -t dangerclose:latest
+#Run
+docker run -it --rm -p 4123:4123 dangerclose:latest
+
+----------------------------------------------------
+
 When you're ready, start your application by running:
 `docker compose up --build`.
 
