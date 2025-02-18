@@ -7,7 +7,7 @@
 # Build
 docker build . -t dangerclose:latest
 
-#Run
+# Run
 docker run -it --rm -p 4123:4123 dangerclose:latest
 
 ----------------------------------------------------
